@@ -110,11 +110,9 @@ def fig_panels():
             arrays.append(arr)
 
         n_cols = len(arrays)
-        fig, axes = plt.subplots(1, n_cols, figsize=(2.4 * n_cols, 4.0))
-        # Explicit geometry: top band reserved for image-name label,
-        # bottom band reserved for metric text below each image.
-        # This sidesteps savefig.bbox='tight' collapsing the extra height.
-        fig.subplots_adjust(top=0.76, bottom=0.18, left=0.01,
+        fig, axes = plt.subplots(1, n_cols, figsize=(2.4 * n_cols, 3.6))
+        # Bottom band reserved for metric text; no top band needed.
+        fig.subplots_adjust(top=0.88, bottom=0.18, left=0.01,
                             right=0.99, wspace=0.06)
 
         for ax, arr, title in zip(axes, arrays, titles):
@@ -142,11 +140,6 @@ def fig_panels():
                         color='#444', fontweight='normal',
                         linespacing=1.4, clip_on=False)
             ax.axis('off')
-
-        # Image name in the reserved top band — centred, clearly separated
-        fig.text(0.5, 0.90, f'Image: {img_name.capitalize()}',
-                 fontsize=11, fontweight='bold', color='#222',
-                 va='center', ha='center')
 
         out = FIG_DIR / f'panel_{img_name}.png'
         fig.savefig(out,         bbox_inches='tight', pad_inches=0.08)
