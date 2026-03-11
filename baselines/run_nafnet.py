@@ -62,9 +62,11 @@ print(f'Using device: {DEVICE}')
 
 
 def load_nafnet(weight_path: Path) -> NAFNet:
-    # GoPro model is RGB (img_channel=3); correct param names from the repo
-    model = NAFNet(img_channel=3, width=64, middle_blk_num=12,
-                   enc_blk_nums=[2, 2, 4, 8], dec_blk_nums=[2, 2, 2, 2])
+    # NAFNet-GoPro-width64 config (read from checkpoint key counts):
+    #   all computation concentrated in deepest encoder (28 blocks),
+    #   shallow encoders/decoders have 1 block each, 1 middle block.
+    model = NAFNet(img_channel=3, width=64, middle_blk_num=1,
+                   enc_blk_nums=[1, 1, 1, 28], dec_blk_nums=[1, 1, 1, 1])
     ckpt  = torch.load(str(weight_path), map_location=DEVICE)
     state = ckpt.get('params', ckpt)
     model.load_state_dict(state, strict=True)
