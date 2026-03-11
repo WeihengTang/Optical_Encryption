@@ -62,12 +62,12 @@ print(f'Using device: {DEVICE}')
 
 
 def load_nafnet(weight_path: Path) -> NAFNet:
-    model = NAFNet(img_channel=1, width=64, middle_blk_num=12,
-                   enc_blks=[2, 2, 4, 8], dec_blks=[2, 2, 2, 2])
+    # GoPro model is RGB (img_channel=3); correct param names from the repo
+    model = NAFNet(img_channel=3, width=64, middle_blk_num=12,
+                   enc_blk_nums=[2, 2, 4, 8], dec_blk_nums=[2, 2, 2, 2])
     ckpt  = torch.load(str(weight_path), map_location=DEVICE)
-    # GoPro checkpoint stores under 'params'
     state = ckpt.get('params', ckpt)
-    model.load_state_dict(state, strict=False)
+    model.load_state_dict(state, strict=True)
     model.eval().to(DEVICE)
     return model
 
@@ -77,14 +77,15 @@ def tile_inference(model: NAFNet,
                    tile: int = TILE_SIZE,
                    overlap: int = TILE_OVERLAP) -> np.ndarray:
     """
-    Run model on (H,W) image via overlapping tiles with linear blend.
+    Run model on (H,W) grayscale image via overlapping tiles with linear blend.
+    Grayscale is broadcast to 3 channels to match the RGB-trained model;
+    the 3 output channels are averaged back to grayscale.
     """
     H, W    = img.shape
     step    = tile - overlap
     out     = np.zeros((H, W), dtype=np.float32)
     weights = np.zeros((H, W), dtype=np.float32)
 
-    # Build a 2-D Hann window for smooth blending
     hann1d = np.hanning(tile).astype(np.float32)
     win    = np.outer(hann1d, hann1d)
 
@@ -94,10 +95,11 @@ def tile_inference(model: NAFNet,
     for y0 in sorted(set(ys)):
         for x0 in sorted(set(xs)):
             patch = img[y0:y0+tile, x0:x0+tile]
+            # Repeat grayscale → 3 channels: (1, 3, T, T)
             t = torch.from_numpy(patch).float()
-            t = t.unsqueeze(0).unsqueeze(0).to(DEVICE)   # (1,1,T,T)
+            t = t.unsqueeze(0).repeat(3, 1, 1).unsqueeze(0).to(DEVICE)
             with torch.no_grad():
-                pred = model(t).squeeze().cpu().numpy()
+                pred = model(t).squeeze().mean(0).cpu().numpy()  # avg 3 ch → 1
             out    [y0:y0+tile, x0:x0+tile] += win * pred
             weights[y0:y0+tile, x0:x0+tile] += win
 
