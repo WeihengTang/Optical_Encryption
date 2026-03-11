@@ -101,8 +101,6 @@ strong            { color: var(--text-primary); font-weight: 600; }
 }
 .button.is-dark:hover { background-color: #111827; }
 
-/* Small caps for MetaLens brand name */
-.sc { font-variant: small-caps; font-weight: 600; }
 
 /* ── Section chrome ──────────────────────────────────────────────── */
 .section { padding: 3.5rem 1.5rem; }
