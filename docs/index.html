@@ -1,437 +1,425 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MetaLens — Optical Encryption via Metasurface PSF</title>
-<style>
-  /* ── reset & base ── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-    background: #0f0f17;
-    color: #e2e8f0;
-    line-height: 1.7;
-  }
+  <meta charset="utf-8">
+  <meta name="description"
+        content="MetaLens: Optical Encryption via Spatially-Varying Metasurface PSF. Only the key-holder can deblur the encrypted image.">
+  <meta name="keywords" content="MetaLens, Optical Encryption, Metasurface, PSF, Deblurring, Computational Photography">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MetaLens: Optical Encryption via Metasurface PSF</title>
 
-  /* ── layout ── */
-  .container { max-width: 980px; margin: 0 auto; padding: 0 2rem; }
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
 
-  /* ── hero ── */
-  .hero {
-    background: linear-gradient(135deg, #13131f 0%, #1a1a2e 60%, #16213e 100%);
-    border-bottom: 1px solid #2a2a4a;
-    padding: 4rem 0 3rem;
-    text-align: center;
-  }
-  .hero h1 {
-    font-size: 3rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 0.5rem;
-  }
-  .hero .subtitle {
-    font-size: 1.15rem;
-    color: #94a3b8;
-    max-width: 640px;
-    margin: 0 auto 1.6rem;
-  }
-  .authors {
-    font-size: 0.95rem;
-    color: #64748b;
-    margin-bottom: 1.8rem;
-  }
-  .authors a { color: #60a5fa; text-decoration: none; }
-  .authors a:hover { text-decoration: underline; }
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.1/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
 
-  /* ── buttons ── */
-  .btn-group { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
-  .btn {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    padding: 0.5rem 1.2rem;
-    border-radius: 6px;
-    font-size: 0.9rem; font-weight: 600;
-    text-decoration: none;
-    transition: opacity 0.15s;
-  }
-  .btn:hover { opacity: 0.82; }
-  .btn-code    { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; }
-  .btn-report  { background: #312e81; color: #e0e7ff; border: 1px solid #4338ca; }
-  .btn-psf     { background: #134e4a; color: #ccfbf1; border: 1px solid #0f766e; }
-
-  /* ── sections ── */
-  section { padding: 3.5rem 0; border-bottom: 1px solid #1e1e30; }
-  section:last-child { border-bottom: none; }
-  h2 {
-    font-size: 1.5rem; font-weight: 700;
-    color: #e2e8f0;
-    margin-bottom: 1.2rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #312e81;
-    display: inline-block;
-  }
-  p { color: #94a3b8; margin-bottom: 0.9rem; }
-  strong { color: #e2e8f0; }
-
-  /* ── teaser ── */
-  .teaser {
-    background: #13131f;
-    border: 1px solid #2a2a4a;
-    border-radius: 12px;
-    overflow: hidden;
-    margin: 2rem 0;
-  }
-  .teaser img { width: 100%; display: block; }
-  .teaser figcaption {
-    padding: 0.8rem 1.2rem;
-    font-size: 0.82rem;
-    color: #64748b;
-    text-align: center;
-  }
-
-  /* ── concept box ── */
-  .concept-box {
-    background: #13131f;
-    border: 1px solid #2a2a4a;
-    border-radius: 10px;
-    padding: 1.5rem 2rem;
-    margin: 1.5rem 0;
-    font-family: "Courier New", monospace;
-    font-size: 0.88rem;
-    color: #a5b4fc;
-    line-height: 2;
-  }
-  .concept-box .comment { color: #475569; }
-  .concept-box .ok   { color: #34d399; }
-  .concept-box .fail { color: #f87171; }
-
-  /* ── results table ── */
-  .results-table {
-    width: 100%; border-collapse: collapse;
-    margin: 1.5rem 0; font-size: 0.92rem;
-  }
-  .results-table th {
-    background: #1e1e30;
-    color: #a78bfa;
-    padding: 0.65rem 1rem;
-    text-align: center;
-    font-weight: 600;
-  }
-  .results-table td {
-    padding: 0.6rem 1rem;
-    text-align: center;
-    border-bottom: 1px solid #1e1e30;
-    color: #94a3b8;
-  }
-  .results-table tr:hover td { background: #13131f; }
-  .nb  { color: #4ade80 !important; font-weight: 600; }
-  .bl  { color: #f87171 !important; }
-  .gap { color: #fbbf24 !important; font-weight: 700; }
-
-  /* ── method cards ── */
-  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0; }
-  @media (max-width: 640px) { .cards { grid-template-columns: 1fr; } }
-  .card {
-    background: #13131f;
-    border: 1px solid #2a2a4a;
-    border-radius: 10px;
-    padding: 1.4rem;
-  }
-  .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
-  .card.auth h3 { color: #4ade80; }
-  .card.adv  h3 { color: #f87171; }
-  .card p { font-size: 0.88rem; margin-bottom: 0; }
-
-  /* ── pipeline figure ── */
-  .pipeline-wrap {
-    background: #0d0d14;
-    border: 1px solid #2a2a4a;
-    border-radius: 12px;
-    overflow: hidden;
-    margin: 1.5rem 0;
-  }
-  .pipeline-wrap img { width: 100%; display: block; }
-
-  /* ── roadmap ── */
-  .roadmap { list-style: none; margin: 1rem 0; }
-  .roadmap li {
-    display: flex; gap: 1rem;
-    padding: 0.7rem 0;
-    border-bottom: 1px solid #1e1e30;
-    font-size: 0.92rem;
-    color: #94a3b8;
-  }
-  .roadmap li:last-child { border-bottom: none; }
-  .phase-badge {
-    flex-shrink: 0;
-    padding: 0.15rem 0.6rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    background: #1e293b;
-    color: #60a5fa;
-    align-self: flex-start;
-    margin-top: 0.15rem;
-    white-space: nowrap;
-  }
-  .done { background: #14532d; color: #4ade80; }
-
-  /* ── footer ── */
-  footer {
-    text-align: center;
-    padding: 2.5rem 0;
-    color: #334155;
-    font-size: 0.82rem;
-  }
-</style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
 
-<!-- ══ HERO ══════════════════════════════════════════════════════════════════ -->
-<header class="hero">
-  <div class="container">
-    <h1>MetaLens</h1>
-    <p class="subtitle">
-      Optical encryption via spatially-varying metasurface PSF —
-      only the key-holder can see what was captured.
-    </p>
-    <p class="authors">
-      <a href="https://github.com/WeihengTang">Weiheng Tang</a>
-      &nbsp;·&nbsp;
-      <span>Collaborators TBD</span>
-    </p>
-    <div class="btn-group">
-      <a class="btn btn-code" href="https://github.com/WeihengTang/MetaLens">
-        &#x2767; Code
-      </a>
-      <a class="btn btn-report" href="report/report.html">
-        &#x1F4C4; Full Report
-      </a>
-      <a class="btn btn-psf" href="static/SV_PSF_grid.png" target="_blank">
-        &#x1F52C; PSF Grid
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="https://github.com/WeihengTang">
+        <span class="icon">
+          <i class="fas fa-home"></i>
+        </span>
       </a>
     </div>
   </div>
-</header>
+</nav>
 
-<!-- ══ TEASER ════════════════════════════════════════════════════════════════ -->
-<section>
-  <div class="container">
-    <figure class="teaser">
-      <img src="static/chelsea_panel.png" alt="MetaLens teaser — chelsea">
-      <figcaption>
-        Left to right: original scene · encrypted by metasurface SV-PSF ·
-        authorized recovery (non-blind Wiener, +16.0 dB) ·
-        adversary's best attempt (blind Wiener-Hunt, +5.8 dB).
-        The <strong>+10.2 dB gap</strong> means the adversary sees only noise
-        while the key-holder reads the image clearly.
-      </figcaption>
-    </figure>
-  </div>
-</section>
 
-<!-- ══ ABSTRACT ══════════════════════════════════════════════════════════════ -->
-<section>
-  <div class="container">
-    <h2>Abstract</h2>
-    <p>
-      We propose <strong>MetaLens</strong>: a framework that leverages a
-      physically-fabricated <strong>metasurface lens</strong> as an optical
-      encryption device.  The metasurface imposes a complex,
-      spatially-varying point-spread function (SV-PSF) — with a distinctive
-      ring/donut shape and off-axis aberrations — on every captured scene.
-    </p>
-    <p>
-      An <em>authorized receiver</em> who possesses the PSF (the secret key)
-      applies patch-wise non-blind deconvolution and reconstructs the scene.
-      An <em>adversary</em> who attempts blind deblurring — even with
-      state-of-the-art algorithms — cannot recover meaningful content,
-      because the true PSF is spatially varying, ring-shaped, and unknown.
-    </p>
-    <p>
-      Our long-term goal is to <strong>optimize the metasurface parameters</strong>
-      end-to-end to maximize the authorized vs. adversary performance gap,
-      using a differentiable PSF generator trained jointly against both sides.
-    </p>
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">MetaLens: Optical Encryption via Spatially-Varying Metasurface PSF</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://github.com/WeihengTang">Weiheng Tang</a><sup>1</sup>
+            </span>
+          </div>
 
-    <div class="concept-box">
-      <span class="comment"># Encryption</span><br>
-      scene  →  [metasurface lens]  →  encrypted image <em>y</em><br><br>
-      <span class="comment"># Authorized (knows PSF θ)</span><br>
-      <em>y</em> + θ  →  Non-blind Wiener  →  x̂ &nbsp;<span class="ok">✓ recognizable</span><br><br>
-      <span class="comment"># Adversary (no PSF knowledge)</span><br>
-      <em>y</em> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→  Blind deblurring →  x̃ &nbsp;<span class="fail">✗ noise</span>
-    </div>
-  </div>
-</section>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>Work in progress</span>
+          </div>
 
-<!-- ══ PSF ════════════════════════════════════════════════════════════════════ -->
-<section>
-  <div class="container">
-    <h2>The Metasurface PSF</h2>
-    <p>
-      The PSF is stored as a <code>(7, 7, 101, 101)</code> array — a 7 × 7
-      spatial grid of kernels, each 101 × 101 pixels.  The ring structure
-      rotates and gains coma-like asymmetry towards the field corners,
-      making blind estimation from a single blurred image extremely difficult.
-    </p>
-    <figure class="teaser">
-      <img src="static/SV_PSF_grid.png" alt="SV-PSF grid">
-      <figcaption>
-        Fig. 1 — 7 × 7 SV-PSF grid (log-scale, inferno colormap).
-        Each panel is one of 49 spatially-distinct kernel positions.
-      </figcaption>
-    </figure>
-  </div>
-</section>
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- Code Link -->
+              <span class="link-block">
+                <a href="https://github.com/WeihengTang/MetaLens"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                </a>
+              </span>
+              <!-- Report Link -->
+              <span class="link-block">
+                <a href="./report/report.html"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fas fa-file-alt"></i>
+                  </span>
+                  <span>Report</span>
+                </a>
+              </span>
+              <!-- PSF Link -->
+              <span class="link-block">
+                <a href="./static/SV_PSF_grid.png" target="_blank"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fas fa-microscope"></i>
+                  </span>
+                  <span>PSF Grid</span>
+                </a>
+              </span>
+            </div>
+          </div>
 
-<!-- ══ METHOD ════════════════════════════════════════════════════════════════ -->
-<section>
-  <div class="container">
-    <h2>Method</h2>
-
-    <div class="cards">
-      <div class="card auth">
-        <h3>&#x1F511; Authorized — Non-blind Wiener</h3>
-        <p>
-          Patch-wise Wiener deconvolution with known SV-PSF.
-          Each of the 49 patches is independently inverted via:
-          <br><br>
-          <code>X̂(ω) = H*(ω) / (|H(ω)|² + λ) · Y(ω)</code>
-          <br><br>
-          λ = 5 × 10⁻² regularisation. Kernel is zero-shifted to
-          (0,0) before FFT to prevent phase offset.
-        </p>
-      </div>
-      <div class="card adv">
-        <h3>&#x1F6A7; Adversary — Blind Wiener-Hunt</h3>
-        <p>
-          scikit-image's <em>Unsupervised Wiener</em> (Gibbs sampler,
-          Gaussian image prior) applied to the <em>whole</em> image,
-          assuming a single spatially-uniform blur. The estimator
-          converges to a smeared average kernel — not the true
-          spatially-varying ring PSF.
-        </p>
+        </div>
       </div>
     </div>
-
-    <h2 style="margin-top:2rem;">Optimization Framework (Proposed)</h2>
-    <p>
-      Once the differentiable metasurface PSF generator is integrated,
-      we will jointly optimize the PSF parameters φ to maximize the
-      security gap end-to-end:
-    </p>
-    <div class="pipeline-wrap">
-      <img src="static/pipeline.png" alt="Optimization pipeline">
-    </div>
-    <p style="font-size:0.84rem; color:#475569; text-align:center; margin-top:-0.5rem;">
-      Phase 1: train both decoders with PSF fixed.
-      Phase 2: freeze decoders, back-propagate ∂ΔL/∂φ to update metasurface params.
-    </p>
   </div>
 </section>
 
-<!-- ══ RESULTS ════════════════════════════════════════════════════════════════ -->
-<section>
-  <div class="container">
-    <h2>Preliminary Results</h2>
-    <p>
-      Classical baselines on three standard test images (1008 × 1008).
-      No training data required at this stage — the non-blind method
-      uses the exact PSF analytically.
-    </p>
 
-    <table class="results-table">
-      <tr>
-        <th>Image</th>
-        <th>Encrypted</th>
-        <th class="nb">Non-blind (auth.)</th>
-        <th class="bl">Blind (adv.)</th>
-        <th class="gap">Gap ↑</th>
-      </tr>
-      <tr>
-        <td>camera</td>
-        <td>16.3 dB / 0.582</td>
-        <td class="nb">14.1 dB / 0.478</td>
-        <td class="bl">4.8 dB / 0.021</td>
-        <td class="gap">+9.3 dB</td>
-      </tr>
-      <tr>
-        <td>astronaut</td>
-        <td>15.6 dB / 0.542</td>
-        <td class="nb">14.4 dB / 0.475</td>
-        <td class="bl">4.7 dB / 0.028</td>
-        <td class="gap">+9.6 dB</td>
-      </tr>
-      <tr>
-        <td>chelsea</td>
-        <td>18.6 dB / 0.643</td>
-        <td class="nb">16.0 dB / 0.536</td>
-        <td class="bl">5.8 dB / 0.016</td>
-        <td class="gap">+10.2 dB</td>
-      </tr>
+<!-- Teaser -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <img src="./static/chelsea_panel.png" alt="MetaLens teaser" style="border-radius:10px;">
+      <h2 class="subtitle has-text-centered" style="margin-top: 1rem;">
+        A <span class="metalens">MetaLens</span> physically encrypts a scene by imposing a
+        spatially-varying ring-shaped PSF. An authorized receiver recovers it with
+        <strong>+16.0 dB PSNR</strong>. A blind adversary sees only noise at
+        <strong>5.8 dB</strong> — a <strong>+10.2 dB security gap</strong>.
+      </h2>
+    </div>
+  </div>
+</section>
+
+
+<!-- Abstract -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            We propose <span class="metalens">MetaLens</span>: a framework that uses a
+            physically-fabricated <strong>metasurface lens</strong> as an optical encryption
+            device. The metasurface imposes a spatially-varying point-spread function (SV-PSF)
+            — featuring a characteristic ring/donut shape with off-axis aberrations — on every
+            captured scene, producing an image that appears as structured noise to an observer
+            without the key.
+          </p>
+          <p>
+            An <strong>authorized receiver</strong> who possesses the PSF (the secret key)
+            applies patch-wise non-blind deconvolution and faithfully reconstructs the original
+            scene. An <strong>adversary</strong> who attempts blind deblurring — even with
+            state-of-the-art algorithms — cannot recover meaningful content, because the true
+            PSF is spatially-varying, ring-shaped, and unknown.
+          </p>
+          <p>
+            Our long-term goal is to <strong>optimize the metasurface parameters
+            end-to-end</strong> to maximize the authorized vs. adversary performance gap,
+            using a differentiable PSF generator jointly trained against both decoders.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- PSF -->
+<section class="section" style="background: #fafafa;">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column">
+        <h2 class="title is-3">The Metasurface PSF</h2>
+        <div class="content has-text-justified">
+          <p>
+            The metasurface produces a spatially-varying PSF stored as a
+            <strong>(7 × 7 × 101 × 101)</strong> array — 49 distinct kernels arranged on a
+            spatial grid, each 101 × 101 pixels. The kernels exhibit a ring/donut structure
+            that rotates and develops asymmetric coma-like tails towards the field corners,
+            a hallmark of off-axis meta-optic aberrations.
+          </p>
+          <p>
+            This complex, position-dependent shape is precisely what makes blind PSF estimation
+            from a single blurred image computationally intractable. A blind deblurring
+            algorithm that assumes a spatially-uniform kernel will converge to a smeared average
+            — far from the true local kernel at any position.
+          </p>
+        </div>
+        <figure>
+          <img src="./static/SV_PSF_grid.png" alt="SV-PSF 7x7 grid"
+               style="max-width:640px; width:100%; border-radius:10px; border:1px solid #ddd;">
+          <figcaption style="margin-top:0.75rem; color:#888; font-size:0.85rem;">
+            Fig. 1 — SV-PSF grid (log-scale intensity, inferno colormap).
+            Each of the 49 panels is one spatially-distinct kernel position.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Method -->
+<section class="section">
+  <div class="container is-max-desktop">
+
+    <h2 class="title is-3 has-text-centered">Method</h2>
+
+    <div class="columns is-centered">
+
+      <!-- Authorized -->
+      <div class="column">
+        <div class="content">
+          <h3 class="title is-4" style="color: #23d160;">&#x1F511; Authorized Decoder</h3>
+          <p>
+            The authorized receiver applies <strong>patch-wise Wiener deconvolution</strong>
+            with the known SV-PSF:
+          </p>
+          <p style="font-family: monospace; background: #f5f5f5; padding: 0.8rem 1rem;
+                    border-radius: 6px; font-size: 0.88rem;">
+            X̂(ω) = H*(ω) / (|H(ω)|² + λ) · Y(ω)
+          </p>
+          <p>
+            Each of the 49 image patches is independently deconvolved using its
+            corresponding kernel (71 × 71 crop, 96.6% energy), with
+            λ = 5 × 10<sup>−2</sup> regularisation. The kernel is
+            zero-shifted to position (0,0) before DFT to eliminate phase offsets.
+          </p>
+        </div>
+      </div>
+
+      <!-- Adversary -->
+      <div class="column">
+        <div class="content">
+          <h3 class="title is-4" style="color: #ff3860;">&#x1F6A7; Blind Adversary</h3>
+          <p>
+            The adversary applies scikit-image's <strong>Unsupervised Wiener-Hunt</strong>
+            (a Gibbs sampler under a Gaussian image prior) to the <em>entire</em> blurred
+            image, with no knowledge of the PSF.
+          </p>
+          <p>
+            The algorithm assumes a single spatially-uniform blur and initialises with a
+            small Gaussian kernel. Because the true PSF is spatially-varying and ring-shaped,
+            the estimator converges to a wrong, smeared kernel — producing a result that is
+            visually unrecognisable.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Pipeline -->
+    <div class="columns is-centered has-text-centered" style="margin-top: 2rem;">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Optimization Framework <span style="font-size:1rem; color:#888;">(proposed)</span></h2>
+        <div class="content has-text-justified">
+          <p>
+            Once the co-worker's <strong>differentiable PSF generator</strong> is integrated,
+            we will run an adversarial training loop to find a metasurface parameter set φ
+            that maximises the security gap end-to-end:
+          </p>
+          <p style="font-family: monospace; background: #f5f5f5; padding: 0.8rem 1rem;
+                    border-radius: 6px; font-size: 0.88rem; text-align: left;">
+            max<sub>φ</sub>&nbsp; PSNR(D<sub>nb</sub>(B<sub>φ</sub>(x), φ), x) − λ · PSNR(D<sub>b</sub>(B<sub>φ</sub>(x)), x)<br>
+            s.t. φ ∈ physically realizable metasurface parameter space
+          </p>
+        </div>
+        <figure>
+          <img src="./static/pipeline.png" alt="Optimization pipeline"
+               style="width:100%; border-radius:10px; border:1px solid #ddd;">
+          <figcaption style="margin-top:0.75rem; color:#888; font-size:0.85rem;">
+            Fig. 2 — Adversarial PSF optimization loop. Phase 1: train both decoders (PSF fixed).
+            Phase 2: freeze decoders, update metasurface params via ∂ΔL/∂φ.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- Results -->
+<section class="section" style="background: #fafafa;">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Preliminary Results</h2>
+    <div class="content has-text-justified">
+      <p>
+        Classical baselines on three standard test images (all 1008 × 1008 px).
+        No training data required — the non-blind method uses the exact PSF analytically.
+        All metrics are PSNR (dB) / SSIM against the clean original.
+      </p>
+    </div>
+
+    <!-- Table -->
+    <table class="table is-striped is-hoverable is-fullwidth" style="border-radius:8px; overflow:hidden;">
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Encrypted</th>
+          <th style="color:#23d160;">Non-blind (authorized)</th>
+          <th style="color:#ff3860;">Blind (adversary)</th>
+          <th style="color:#ffdd57;">Gap ↑</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>camera</td>
+          <td>16.3 dB / 0.582</td>
+          <td style="color:#23d160; font-weight:600;">14.1 dB / 0.478</td>
+          <td style="color:#ff3860;">4.8 dB / 0.021</td>
+          <td style="color:#f0a500; font-weight:700;">+9.3 dB</td>
+        </tr>
+        <tr>
+          <td>astronaut</td>
+          <td>15.6 dB / 0.542</td>
+          <td style="color:#23d160; font-weight:600;">14.4 dB / 0.475</td>
+          <td style="color:#ff3860;">4.7 dB / 0.028</td>
+          <td style="color:#f0a500; font-weight:700;">+9.6 dB</td>
+        </tr>
+        <tr>
+          <td>chelsea</td>
+          <td>18.6 dB / 0.643</td>
+          <td style="color:#23d160; font-weight:600;">16.0 dB / 0.536</td>
+          <td style="color:#ff3860;">5.8 dB / 0.016</td>
+          <td style="color:#f0a500; font-weight:700;">+10.2 dB</td>
+        </tr>
+      </tbody>
     </table>
-    <p style="font-size:0.82rem; color:#475569;">
-      Metrics: PSNR (dB) / SSIM vs. clean original.
-    </p>
 
-    <figure class="teaser">
-      <img src="static/camera_panel.png" alt="camera results">
-      <figcaption>Fig. 2 — 'camera' image results.</figcaption>
-    </figure>
-    <figure class="teaser">
-      <img src="static/astronaut_panel.png" alt="astronaut results">
-      <figcaption>Fig. 3 — 'astronaut' image results.</figcaption>
-    </figure>
+    <!-- Per-image panels -->
+    <div class="columns is-centered" style="margin-top:2rem;">
+      <div class="column is-full-width">
+
+        <h3 class="title is-4 has-text-centered">camera</h3>
+        <figure>
+          <img src="./static/camera_panel.png" alt="camera results"
+               style="width:100%; border-radius:10px; border:1px solid #ddd;">
+        </figure>
+
+        <h3 class="title is-4 has-text-centered" style="margin-top:2rem;">astronaut</h3>
+        <figure>
+          <img src="./static/astronaut_panel.png" alt="astronaut results"
+               style="width:100%; border-radius:10px; border:1px solid #ddd;">
+        </figure>
+
+        <h3 class="title is-4 has-text-centered" style="margin-top:2rem;">chelsea</h3>
+        <figure>
+          <img src="./static/chelsea_panel.png" alt="chelsea results"
+               style="width:100%; border-radius:10px; border:1px solid #ddd;">
+        </figure>
+
+        <p style="text-align:center; color:#888; font-size:0.85rem; margin-top:0.5rem;">
+          Left to right: Original · Encrypted (SV-PSF blur) · Non-blind recovery (authorized) · Blind attempt (adversary)
+        </p>
+      </div>
+    </div>
+
   </div>
 </section>
 
-<!-- ══ ROADMAP ════════════════════════════════════════════════════════════════ -->
-<section>
-  <div class="container">
-    <h2>Roadmap</h2>
-    <ul class="roadmap">
-      <li>
-        <span class="phase-badge done">Now ✓</span>
-        Classical baselines (Wiener non-blind vs. blind Wiener-Hunt) on existing PSF.
-        ~10 dB security gap demonstrated.
-      </li>
-      <li>
-        <span class="phase-badge">Week 2</span>
-        Integrate differentiable PSF generator (co-worker's model).
-        Set up DIV2K training pipeline.
-      </li>
-      <li>
-        <span class="phase-badge">Week 3</span>
-        Replace with deep baselines: <strong>DPIR / USRNet</strong> (non-blind)
-        and <strong>NAFNet / Restormer</strong> (blind adversary).
-      </li>
-      <li>
-        <span class="phase-badge">Month 2</span>
-        Full adversarial PSF optimization loop with LPIPS perceptual loss.
-        Ablation over adversary strength.
-      </li>
-      <li>
-        <span class="phase-badge">Month 3</span>
-        Fabrication-candidate PSF. Physical validation. Paper draft.
-      </li>
-    </ul>
+
+<!-- Roadmap -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Roadmap</h2>
+        <div class="content has-text-justified">
+          <p>
+            <strong>Now ✅</strong> — Classical baselines (Wiener non-blind vs. blind Wiener-Hunt)
+            on the current metasurface PSF. ~10 dB security gap demonstrated.
+          </p>
+          <p>
+            <strong>Week 2</strong> — Integrate the differentiable PSF generator
+            (co-worker's model). Set up DIV2K training dataset pipeline.
+          </p>
+          <p>
+            <strong>Week 3</strong> — Replace classical baselines with deep networks:
+            <a href="https://github.com/cszn/DPIR">DPIR</a> /
+            <a href="https://github.com/cszn/USRNet">USRNet</a> (non-blind) and
+            <a href="https://github.com/megvii-research/NAFNet">NAFNet</a> /
+            <a href="https://github.com/swz30/Restormer">Restormer</a> (blind adversary).
+          </p>
+          <p>
+            <strong>Month 2</strong> — Full adversarial PSF optimization loop with
+            LPIPS perceptual loss. Ablation over adversary strength.
+          </p>
+          <p>
+            <strong>Month 3</strong> — Physical fabrication-candidate PSF.
+            Experimental validation. Paper draft.
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- ══ FOOTER ════════════════════════════════════════════════════════════════ -->
-<footer>
+
+<!-- BibTeX -->
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@misc{tang2026metalens,
+  author    = {Tang, Weiheng},
+  title     = {MetaLens: Optical Encryption via Spatially-Varying Metasurface PSF},
+  year      = {2026},
+  note      = {Work in progress},
+  url       = {https://weihengtang.github.io/MetaLens/}
+}</code></pre>
+  </div>
+</section>
+
+
+<footer class="footer">
   <div class="container">
-    MetaLens &nbsp;·&nbsp; Weiheng Tang &nbsp;·&nbsp; 2026
-    &nbsp;·&nbsp;
-    <a href="https://github.com/WeihengTang/MetaLens" style="color:#334155;">GitHub</a>
+    <div class="content has-text-centered">
+      <a class="icon-link" href="https://github.com/WeihengTang/MetaLens">
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is licensed under a
+            <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">
+              Creative Commons Attribution-ShareAlike 4.0 International License
+            </a>.
+            The page template is borrowed from
+            <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>.
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
 </footer>
+
 
 </body>
 </html>
