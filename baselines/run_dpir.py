@@ -77,26 +77,31 @@ def dpir_deblur(blurred: np.ndarray,
                 model: DRUNet,
                 n_iter: int = N_ITER) -> np.ndarray:
     """
-    PnP-HQS deblurring with the known SV-PSF.
+    PnP-ADMM deblurring with the known SV-PSF.
 
-    The data step is our Wiener deblur; the prior step is DRUNet.
-    The regularisation ρ (passed as `reg` to Wiener) is coupled to σ_k:
-      ρ_k = σ_k² / σ_noise²   (following DPIR Eq. 9)
-    We assume σ_noise ≈ 2.55/255 (very slight observation noise).
+    Alternates between:
+      Data step:  z_k = Wiener(y, PSF, reg=λ)  — uses exact SV-PSF
+      Prior step: x_{k+1} = DRUNet(z_k, σ_k)  — deep denoiser prior
+
+    The Wiener regularisation λ is fixed (same as the classical baseline).
+    The denoiser noise level σ_k is annealed from high → low so the prior
+    acts strongly early (coarse structure) and weakly late (fine details).
     """
-    sigma_noise = 2.55 / 255
+    # Fixed Wiener reg — same value that works for our classical baseline
+    wiener_reg = 5e-2
     sigmas = np.linspace(SIGMA_START, SIGMA_END, n_iter)
 
-    x = blurred.astype(np.float64)
+    # Initialise with a single Wiener pass on the blurred image
+    x = non_blind_deblur(blurred, psf, kernel_size=KSIZE,
+                         reg=wiener_reg).astype(np.float64)
     for k, sigma_k in enumerate(sigmas):
-        rho_k = float(sigma_k ** 2 / sigma_noise ** 2)
-        # Data step: Wiener with reg = ρ_k (balances data fidelity vs prior)
+        # Data step: re-run Wiener on the current estimate fed back as input
         z = non_blind_deblur(x.astype(np.float32), psf,
-                             kernel_size=KSIZE, reg=rho_k)
+                             kernel_size=KSIZE, reg=wiener_reg)
         z = z.astype(np.float64)
         # Prior step: DRUNet denoiser
         x = drunet_denoise(model, z, sigma_k)
-        print(f'    HQS iter {k+1}/{n_iter}  σ={sigma_k*255:.1f}  ρ={rho_k:.3f}')
+        print(f'    iter {k+1}/{n_iter}  σ={sigma_k*255:.1f}')
 
     return np.clip(x, 0.0, 1.0).astype(np.float32)
 
