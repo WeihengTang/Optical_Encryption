@@ -1,0 +1,4 @@
+third_party/
+weights/
+data/
+results/*.npy
