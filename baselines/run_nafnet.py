@@ -16,23 +16,28 @@ Reference:
 """
 import sys
 import types
-import importlib.util
 from pathlib import Path
+
+# ── Import isolation ──────────────────────────────────────────────────────────
+# Must happen before torch/numpy so no stale basicsr is cached yet.
+# 1. Put NAFNet's own basicsr first on the path.
+sys.path.insert(0, str(Path(__file__).parent / 'third_party' / 'NAFNet'))
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Patch the module removed in torchvision>=0.14 before basicsr tries to
-# import it.  This must happen before any basicsr import, direct or indirect.
+# 2. Evict any already-cached basicsr (e.g. from a previous import attempt).
+for _k in [k for k in sys.modules if k == 'basicsr' or k.startswith('basicsr.')]:
+    del sys.modules[_k]
+
+# 3. Patch the torchvision sub-module removed in torchvision>=0.14.
 import torchvision.transforms.functional as _F
 _fake = types.ModuleType('torchvision.transforms.functional_tensor')
 _fake.rgb_to_grayscale = _F.rgb_to_grayscale
 sys.modules['torchvision.transforms.functional_tensor'] = _fake
+# ─────────────────────────────────────────────────────────────────────────────
 
 import json
 import numpy as np
 import torch
-
-# Prioritise the NAFNet repo's own basicsr over the installed one.
-sys.path.insert(0, str(Path(__file__).parent / 'third_party' / 'NAFNet'))
 from basicsr.models.archs.NAFNet_arch import NAFNet
 
 from src.metrics import compute_all

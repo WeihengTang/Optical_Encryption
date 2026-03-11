@@ -16,23 +16,24 @@ Reference:
 """
 import sys
 import types
-import importlib.util
 from pathlib import Path
+
+# ── Import isolation ──────────────────────────────────────────────────────────
+sys.path.insert(0, str(Path(__file__).parent / 'third_party' / 'Restormer'))
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Patch the module removed in torchvision>=0.14 before basicsr tries to
-# import it.  This must happen before any basicsr import, direct or indirect.
+for _k in [k for k in sys.modules if k == 'basicsr' or k.startswith('basicsr.')]:
+    del sys.modules[_k]
+
 import torchvision.transforms.functional as _F
 _fake = types.ModuleType('torchvision.transforms.functional_tensor')
 _fake.rgb_to_grayscale = _F.rgb_to_grayscale
 sys.modules['torchvision.transforms.functional_tensor'] = _fake
+# ─────────────────────────────────────────────────────────────────────────────
 
 import json
 import numpy as np
 import torch
-
-# Prioritise the Restormer repo's own basicsr over the installed one.
-sys.path.insert(0, str(Path(__file__).parent / 'third_party' / 'Restormer'))
 from basicsr.models.archs.restormer_arch import Restormer
 
 from src.metrics import compute_all
