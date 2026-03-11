@@ -77,31 +77,31 @@ def dpir_deblur(blurred: np.ndarray,
                 model: DRUNet,
                 n_iter: int = N_ITER) -> np.ndarray:
     """
-    PnP-ADMM deblurring with the known SV-PSF.
+    Wiener deconvolution + iterative DRUNet refinement.
 
-    Alternates between:
-      Data step:  z_k = Wiener(y, PSF, reg=λ)  — uses exact SV-PSF
-      Prior step: x_{k+1} = DRUNet(z_k, σ_k)  — deep denoiser prior
+    Step 1 (once): apply Wiener deconvolution on the blurred image y using
+                   the known SV-PSF.  This is the data-fidelity step.
+    Step 2 (loop): iteratively apply DRUNet with a decreasing noise level
+                   to suppress ringing and Wiener artifacts while preserving
+                   the structure recovered in step 1.
 
-    The Wiener regularisation λ is fixed (same as the classical baseline).
-    The denoiser noise level σ_k is annealed from high → low so the prior
-    acts strongly early (coarse structure) and weakly late (fine details).
+    The Wiener output is fixed as the input to every denoiser call —
+    we never deconvolve the denoised estimate (which would amplify artifacts).
     """
-    # Fixed Wiener reg — same value that works for our classical baseline
     wiener_reg = 5e-2
     sigmas = np.linspace(SIGMA_START, SIGMA_END, n_iter)
 
-    # Initialise with a single Wiener pass on the blurred image
-    x = non_blind_deblur(blurred, psf, kernel_size=KSIZE,
-                         reg=wiener_reg).astype(np.float64)
+    # Single Wiener pass on the original blurred image
+    wiener_out = non_blind_deblur(blurred, psf, kernel_size=KSIZE,
+                                  reg=wiener_reg).astype(np.float64)
+    x = wiener_out.copy()
     for k, sigma_k in enumerate(sigmas):
-        # Data step: re-run Wiener on the current estimate fed back as input
-        z = non_blind_deblur(x.astype(np.float32), psf,
-                             kernel_size=KSIZE, reg=wiener_reg)
-        z = z.astype(np.float64)
-        # Prior step: DRUNet denoiser
+        # Blend Wiener output with current estimate to anchor data fidelity,
+        # then denoise. α controls how much we trust the Wiener solution.
+        alpha = 1.0 - k / n_iter          # linearly decay anchor weight
+        z = alpha * wiener_out + (1 - alpha) * x
         x = drunet_denoise(model, z, sigma_k)
-        print(f'    iter {k+1}/{n_iter}  σ={sigma_k*255:.1f}')
+        print(f'    iter {k+1}/{n_iter}  σ={sigma_k*255:.1f}  α={alpha:.2f}')
 
     return np.clip(x, 0.0, 1.0).astype(np.float32)
 
