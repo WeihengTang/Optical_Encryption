@@ -57,8 +57,8 @@ print(f'Using device: {DEVICE}')
 
 def load_restormer(weight_path: Path) -> Restormer:
     model = Restormer(
-        inp_channels=1,
-        out_channels=1,
+        inp_channels=3,   # checkpoint is RGB-trained
+        out_channels=3,
         dim=48,
         num_blocks=[4, 6, 6, 8],
         num_refinement_blocks=4,
@@ -70,7 +70,7 @@ def load_restormer(weight_path: Path) -> Restormer:
     )
     ckpt  = torch.load(str(weight_path), map_location=DEVICE)
     state = ckpt.get('params', ckpt)
-    model.load_state_dict(state, strict=False)
+    model.load_state_dict(state, strict=True)
     model.eval().to(DEVICE)
     return model
 
@@ -93,10 +93,11 @@ def tile_inference(model: Restormer,
     for y0 in sorted(set(ys)):
         for x0 in sorted(set(xs)):
             patch = img[y0:y0+tile, x0:x0+tile]
+            # Repeat grayscale → 3 channels; average output back to 1
             t = torch.from_numpy(patch).float()
-            t = t.unsqueeze(0).unsqueeze(0).to(DEVICE)
+            t = t.unsqueeze(0).repeat(3, 1, 1).unsqueeze(0).to(DEVICE)
             with torch.no_grad():
-                pred = model(t).squeeze().cpu().numpy()
+                pred = model(t).squeeze().mean(0).cpu().numpy()
             out    [y0:y0+tile, x0:x0+tile] += win * pred
             weights[y0:y0+tile, x0:x0+tile] += win
 
