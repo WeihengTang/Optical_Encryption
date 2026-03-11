@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="description"
         content="Optical Encryption via Spatially-Varying Metasurface PSF. Only the key-holder can deblur the encrypted image.">
-  <meta name="keywords" content="MetaLens, Optical Encryption, Metasurface, PSF, Deblurring, Computational Photography">
+  <meta name="keywords" content="Optical Encryption, Metasurface, Spatially-Varying PSF, Deblurring, Computational Photography">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MetaLens: Optical Encryption via Metasurface PSF</title>
+  <title>Optical Encryption via Spatially-Varying Metasurface PSF</title>
 
   <!-- Inter font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -68,7 +68,7 @@
         <div class="column has-text-centered">
 
           <h1 class="title is-1 publication-title">
-            MetaLens: Optical Encryption via<br>
+            Optical Encryption via<br>
             Spatially-Varying Metasurface PSF
           </h1>
 
@@ -122,15 +122,22 @@
   <div class="container is-max-desktop">
     <div class="hero-body">
       <figure class="teaser-figure">
-        <img src="./static/chelsea_panel.png" alt="MetaLens result panel for the chelsea test image.">
+        <img src="./static/baselines/panel_chelsea.png"
+             alt="Comprehensive baseline comparison on the chelsea image: original, encrypted, and five reconstruction methods.">
         <figcaption>
           <strong>Fig. 1.</strong>
-          From left to right: original scene, encrypted image (SV-PSF blur),
-          authorized recovery (non-blind Wiener, 23.6&thinsp;dB PSNR),
-          and blind adversary attempt (Unsupervised Wiener-Hunt, 20.7&thinsp;dB PSNR).
-          The <strong>+2.9&thinsp;dB security gap</strong> with the current unoptimized PSF;
-          the gap is expected to widen significantly once the PSF is optimized via
-          the differentiable metasurface generator.
+          Comprehensive reconstruction comparison on the <em>chelsea</em> test image.
+          From left to right: (1)&nbsp;original scene; (2)&nbsp;encrypted image produced by
+          the metasurface SV-PSF; then five deblurring methods split by role —
+          <strong style="color:#2d6a87;">authorized</strong> (PSF known):
+          (3)&nbsp;Wiener deconvolution (23.6&thinsp;dB), (4)&nbsp;DPIR deep denoiser prior (23.5&thinsp;dB);
+          <strong style="color:#a04030;">adversary</strong> (PSF unknown):
+          (5)&nbsp;Unsupervised Wiener-Hunt (20.7&thinsp;dB), (6)&nbsp;NAFNet zero-shot (23.8&thinsp;dB),
+          (7)&nbsp;Restormer zero-shot (23.7&thinsp;dB).
+          Classical blind methods lag behind by 2&ndash;3&thinsp;dB, but SOTA deep networks
+          (NAFNet, Restormer) match the authorized decoder without any PSF knowledge,
+          exposing a zero security gap in the unoptimized design and motivating
+          adversarial PSF optimization.
         </figcaption>
       </figure>
     </div>
@@ -148,19 +155,21 @@
         <h2 class="title is-3 section-title">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            We propose <span class="sc">MetaLens</span>, a framework that exploits a
-            physically-fabricated <strong>metasurface lens</strong> as an optical encryption
-            device. The lens imposes a spatially-varying point-spread function (SV-PSF) —
-            characterised by a ring-shaped kernel with off-axis coma-like aberrations — on
-            every captured scene, producing an image that appears as structured noise to any
-            observer without the key.
+            We exploit a physically-fabricated <strong>metasurface lens</strong> as an
+            optical encryption device. The lens imposes a spatially-varying point-spread
+            function (SV-PSF) — characterised by a ring-shaped kernel with off-axis
+            coma-like aberrations — on every captured scene, producing an image that appears
+            as structured noise to any observer without the key.
           </p>
           <p>
-            An <em>authorized receiver</em> who possesses the PSF applies patch-wise
-            non-blind deconvolution and faithfully reconstructs the original scene. An
-            <em>adversary</em> who relies on blind deblurring cannot recover meaningful
-            content: the PSF is spatially varying, ring-shaped, and unknown, causing any
-            spatially-uniform blind estimator to converge to a smeared, incorrect kernel.
+            An <em>authorized receiver</em> who possesses the PSF applies non-blind
+            deconvolution and faithfully reconstructs the original scene. An
+            <em>adversary</em> without the PSF faces a much harder blind deblurring problem:
+            classical blind estimators (e.g., Unsupervised Wiener-Hunt) fail due to the
+            spatially-varying, ring-shaped nature of the kernel. However, we find that
+            state-of-the-art deep blind restoration networks (NAFNet, Restormer) applied
+            zero-shot close the security gap to approximately zero, matching the authorized
+            decoder without any PSF knowledge.
           </p>
           <p>
             Our long-term objective is to <strong>optimize the metasurface parameters
@@ -512,85 +521,89 @@
       This motivates adversarial PSF optimization.
     </p>
 
-    <!-- Visual panels -->
+    <!-- Per-image visual panels — all 5 methods -->
     <div style="margin-top: 2.5rem;">
-      <figure class="content-figure">
-        <img src="./static/camera_panel.png" alt="Results panel for the camera test image.">
-        <figcaption>
-          <strong>Fig. 4.</strong>
-          Results on the <em>camera</em> image. Non-blind: 20.5&thinsp;dB; Blind: 18.1&thinsp;dB; Gap: +2.4&thinsp;dB.
-        </figcaption>
-      </figure>
-      <figure class="content-figure" style="margin-top: 1.5rem;">
-        <img src="./static/astronaut_panel.png" alt="Results panel for the astronaut test image.">
-        <figcaption>
-          <strong>Fig. 5.</strong>
-          Results on the <em>astronaut</em> image. Non-blind: 19.4&thinsp;dB; Blind: 17.0&thinsp;dB; Gap: +2.4&thinsp;dB.
-        </figcaption>
-      </figure>
-      <figure class="content-figure" style="margin-top: 1.5rem;">
-        <img src="./static/chelsea_panel.png" alt="Results panel for the chelsea test image.">
-        <figcaption>
-          <strong>Fig. 6.</strong>
-          Results on the <em>chelsea</em> image. Non-blind: 23.6&thinsp;dB; Blind: 20.7&thinsp;dB; Gap: +2.9&thinsp;dB.
-        </figcaption>
-      </figure>
-
-      <!-- Deep baseline comparison -->
-      <h3 class="title is-5" style="margin-top:2.5rem;">Deep Baseline Comparison</h3>
       <p style="margin-bottom:1rem;">
-        Side-by-side reconstruction quality for all five methods.
-        Authorized methods (green border) know the PSF; adversary methods (red border) do not.
+        Each panel shows seven columns:
+        <strong>(1)</strong>&nbsp;Original &nbsp;
+        <strong>(2)</strong>&nbsp;Encrypted (SV-PSF) &nbsp;|&nbsp;
+        <strong style="color:#2d6a87;">(3)</strong>&nbsp;Wiener (auth) &nbsp;
+        <strong style="color:#2d6a87;">(4)</strong>&nbsp;DPIR (auth) &nbsp;|&nbsp;
+        <strong style="color:#a04030;">(5)</strong>&nbsp;Wiener-Hunt (adv) &nbsp;
+        <strong style="color:#a04030;">(6)</strong>&nbsp;NAFNet (adv) &nbsp;
+        <strong style="color:#a04030;">(7)</strong>&nbsp;Restormer (adv).
+        Authorized methods know the PSF; adversary methods do not.
       </p>
 
       <figure class="content-figure">
         <img src="./static/baselines/panel_camera.png"
-             alt="All-method comparison panel for the camera image."
+             alt="All-method comparison on the camera image: original, encrypted, Wiener, DPIR, Wiener-Hunt, NAFNet, Restormer."
              style="width:100%;">
         <figcaption>
-          <strong>Fig. 7.</strong> <em>camera</em> —
-          Original | Encrypted | Wiener-NB | DPIR | Wiener-Hunt | NAFNet | Restormer.
-          NAFNet and Restormer (adversary, no PSF) match the authorized decoder.
+          <strong>Fig. 4.</strong>
+          <em>camera</em> image — all five reconstruction methods.
+          Authorized: Wiener 20.5&thinsp;dB, DPIR 20.5&thinsp;dB.
+          Adversary: Wiener-Hunt 18.1&thinsp;dB, NAFNet <strong>20.5&thinsp;dB</strong>,
+          Restormer <strong>20.4&thinsp;dB</strong>.
+          PSNR / SSIM values are annotated on each panel.
+          NAFNet and Restormer, with no PSF knowledge, match the authorized decoder.
         </figcaption>
       </figure>
 
-      <figure class="content-figure" style="margin-top:1.5rem;">
+      <figure class="content-figure" style="margin-top: 1.5rem;">
         <img src="./static/baselines/panel_astronaut.png"
-             alt="All-method comparison panel for the astronaut image."
+             alt="All-method comparison on the astronaut image."
              style="width:100%;">
         <figcaption>
-          <strong>Fig. 8.</strong> <em>astronaut</em> — same layout as Fig. 7.
+          <strong>Fig. 5.</strong>
+          <em>astronaut</em> image — all five reconstruction methods.
+          Authorized: Wiener 19.4&thinsp;dB, DPIR 19.3&thinsp;dB.
+          Adversary: Wiener-Hunt 17.0&thinsp;dB, NAFNet <strong>18.9&thinsp;dB</strong>,
+          Restormer <strong>18.8&thinsp;dB</strong>.
+          The classical Wiener-Hunt adversary is visibly degraded;
+          NAFNet and Restormer produce outputs nearly indistinguishable from the authorized recovery.
         </figcaption>
       </figure>
 
-      <figure class="content-figure" style="margin-top:1.5rem;">
+      <figure class="content-figure" style="margin-top: 1.5rem;">
         <img src="./static/baselines/panel_chelsea.png"
-             alt="All-method comparison panel for the chelsea image."
+             alt="All-method comparison on the chelsea image."
              style="width:100%;">
         <figcaption>
-          <strong>Fig. 9.</strong> <em>chelsea</em> — same layout as Fig. 7.
+          <strong>Fig. 6.</strong>
+          <em>chelsea</em> image — all five reconstruction methods.
+          Authorized: Wiener 23.6&thinsp;dB, DPIR 23.5&thinsp;dB.
+          Adversary: Wiener-Hunt 20.7&thinsp;dB, NAFNet <strong>23.8&thinsp;dB</strong>,
+          Restormer <strong>23.7&thinsp;dB</strong>.
+          NAFNet slightly <em>exceeds</em> the authorized decoder in PSNR,
+          confirming the security gap is zero with the unoptimized PSF.
         </figcaption>
       </figure>
 
-      <figure class="content-figure" style="margin-top:1.5rem;">
+      <figure class="content-figure" style="margin-top: 1.5rem;">
         <img src="./static/baselines/psnr_bar.png"
-             alt="PSNR bar chart for all methods and images."
+             alt="Grouped PSNR bar chart for all five methods across three test images."
              style="max-width:680px; display:block; margin:0 auto;">
         <figcaption>
-          <strong>Fig. 10.</strong>
-          PSNR for all methods. Blue bars = authorized (AUTH), red bars = adversary (ADV).
-          SOTA blind networks (NAFNet, Restormer) reach AUTH-level PSNR without the PSF.
+          <strong>Fig. 7.</strong>
+          PSNR (dB) for all five methods across three test images.
+          Blue bars = authorized (AUTH, PSF known); red bars = adversary (ADV, PSF unknown).
+          Classical Wiener-Hunt lags by 2&ndash;3&thinsp;dB, but NAFNet and Restormer
+          reach AUTH-level PSNR without any PSF knowledge, yielding a near-zero security gap.
         </figcaption>
       </figure>
 
-      <figure class="content-figure" style="margin-top:1.5rem;">
+      <figure class="content-figure" style="margin-top: 1.5rem;">
         <img src="./static/baselines/gap_summary.png"
-             alt="Security gap summary chart."
+             alt="Security gap bar chart: best authorized minus best adversary PSNR per image."
              style="max-width:480px; display:block; margin:0 auto;">
         <figcaption>
-          <strong>Fig. 11.</strong>
-          Security gap: best authorized vs. best adversary PSNR per image.
-          The near-zero (or negative) gap motivates adversarial PSF optimization.
+          <strong>Fig. 8.</strong>
+          Security gap: best authorized PSNR minus best adversary PSNR for each test image.
+          Positive values (green) favour the authorized receiver; negative values (red) indicate
+          the adversary outperforms. All gaps are near zero (&lt;0.5&thinsp;dB), demonstrating
+          that the unoptimized ring PSF provides no security against SOTA blind restorers.
+          This directly motivates adversarial end-to-end PSF optimization.
         </figcaption>
       </figure>
 
@@ -666,12 +679,12 @@
 <section class="section alt-section" id="BibTeX">
   <div class="container is-max-desktop content">
     <h2 class="title is-3 section-title">BibTeX</h2>
-    <pre class="bibtex-block"><code>@misc{tang2026metalens,
+    <pre class="bibtex-block"><code>@misc{tang2026optical,
   author  = {Tang, Weiheng},
-  title   = {{MetaLens}: Optical Encryption via Spatially-Varying Metasurface {PSF}},
+  title   = {Optical Encryption via Spatially-Varying Metasurface {PSF}},
   year    = {2026},
   note    = {Work in progress},
-  url     = {https://weihengtang.github.io/MetaLens/}
+  url     = {https://weihengtang.github.io/Optical_Encryption/}
 }</code></pre>
   </div>
 </section>
