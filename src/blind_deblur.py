@@ -50,8 +50,9 @@ def blind_wiener(
     -------
     restored : (H, W) float32 in [0, 1]
     """
-    # unsupervised_wiener needs a psf initialisation; use a centred Gaussian
-    psf_init = _make_gaussian_kernel(psf_size, sigma=psf_size / 6)
+    # Small, compact Gaussian init avoids the bad local minimum that a large
+    # 71×71 / σ=12 kernel causes (converges to pure noise at PSNR≈4.7 dB).
+    psf_init = _make_gaussian_kernel(21, sigma=3.0)
     user_params = {"max_iter": n_iter}
     restored, _ = unsupervised_wiener(blurred, psf_init,
                                       user_params=user_params, clip=True)
@@ -60,7 +61,7 @@ def blind_wiener(
 
 def blind_rl(
     blurred: np.ndarray,
-    assumed_sigma: float = 8.0,
+    assumed_sigma: float = 3.0,
     n_iter: int = 30,
 ) -> np.ndarray:
     """

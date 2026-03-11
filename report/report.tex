@@ -74,8 +74,9 @@ patch-wise non-blind Wiener deconvolution and faithfully reconstructs the
 original scene.  An \emph{adversary} relying on blind deblurring cannot,
 because the PSF is spatially varying and ring-shaped: any spatially-uniform
 blind estimator converges to the wrong kernel.  Preliminary experiments on
-standard test images yield a security gap of approximately $\mathbf{15}$--$\mathbf{18}$\,dB
-in PSNR between the authorized and blind recovery channels.  Our long-term
+standard test images yield a security gap of approximately $\mathbf{2}$--$\mathbf{3}$\,dB
+in PSNR with the unoptimized PSF; this gap is expected to grow substantially
+once the PSF is tuned end-to-end.  Our long-term
 objective is to optimize the metasurface parameters end-to-end so as to
 maximize this gap, using a differentiable PSF generator trained against both
 decoders in an adversarial loop.
@@ -223,13 +224,14 @@ The adversary observes only $y$ and has no knowledge of $\{h_{ij}\}$.  We
 model the adversary as the \textbf{Unsupervised Wiener-Hunt} algorithm
 \cite{orieux2010bayesian}: a Gibbs sampler that alternates between sampling
 the latent image and the PSF under Gaussian priors.  The algorithm is
-initialised with a Gaussian kernel of bandwidth $\sigma = 71/6 \approx 11.8$
-pixels and is applied to the \emph{entire} blurred image, implicitly assuming
-a single spatially-uniform blur.
+initialised with a compact Gaussian kernel ($21\times21$, $\sigma = 3$ px)
+and is applied to the \emph{entire} blurred image, implicitly assuming a
+single spatially-uniform blur.
 
 Because the true PSF is spatially varying and ring-shaped, the estimated
-kernel converges to a wrong, smeared average, and the recovered image is
-visually indistinguishable from noise.
+kernel converges to a wrong, smeared average.  The recovered image retains
+some coarse structure but is substantially degraded compared to the
+authorized recovery.
 
 % ═════════════════════════════════════════════════════════════════════════════
 \section{Preliminary Results}
@@ -245,8 +247,8 @@ All experiments run on CPU; no training data are required at this stage.
 \subsection{Quantitative Results}
 
 Table~\ref{tab:results} summarises the results.  The authorized non-blind
-decoder consistently achieves $\approx\!15$--$18$\,dB higher PSNR than the
-blind adversary.
+decoder achieves $+2.4$--$+2.9$\,dB higher PSNR than the blind adversary
+(Unsupervised Wiener-Hunt with a Gaussian PSF prior) for this unoptimized PSF.
 
 \begin{table}[H]
   \centering
@@ -267,9 +269,9 @@ blind adversary.
     \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
     Image & PSNR & SSIM & PSNR & SSIM & PSNR & SSIM & Gap (dB) \\
     \midrule
-    camera    & 21.0 & 0.686 & 20.5 & 0.679 & 4.8 & 0.005 & \textbf{+15.7} \\
-    astronaut & 18.9 & 0.627 & 19.4 & 0.650 & 4.7 & 0.004 & \textbf{+14.7} \\
-    chelsea   & 24.3 & 0.760 & 23.6 & 0.762 & 5.8 & 0.007 & \textbf{+17.8} \\
+    camera    & 21.0 & 0.686 & 20.5 & 0.679 & 18.1 & 0.335 & \textbf{+2.4} \\
+    astronaut & 18.9 & 0.627 & 19.4 & 0.650 & 17.0 & 0.291 & \textbf{+2.4} \\
+    chelsea   & 24.3 & 0.760 & 23.6 & 0.762 & 20.7 & 0.413 & \textbf{+2.9} \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -287,14 +289,16 @@ blind adversary.
 Figures~\ref{fig:camera}--\ref{fig:chelsea} show, left to right, the original
 scene, the encrypted image, the authorized recovery, and the adversary's
 best attempt.  The authorized reconstruction is clearly recognizable for all
-three images.  The adversary's output is uniform noise in all cases.
+three images.  The adversary's output (Unsupervised Wiener-Hunt with a
+Gaussian PSF prior) shows visible blur and artefacts but retains some
+coarse structure at the current unoptimized PSF.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\linewidth]{results_camera.pdf}
   \caption{Results on the \emph{camera} image.
            Non-blind: 20.5\,dB / 0.679 SSIM.
-           Blind: 4.8\,dB / 0.005 SSIM.}
+           Blind: 18.1\,dB / 0.335 SSIM. Gap: +2.4\,dB.}
   \label{fig:camera}
 \end{figure}
 
@@ -303,7 +307,7 @@ three images.  The adversary's output is uniform noise in all cases.
   \includegraphics[width=\linewidth]{results_astronaut.pdf}
   \caption{Results on the \emph{astronaut} image.
            Non-blind: 19.4\,dB / 0.650 SSIM.
-           Blind: 4.7\,dB / 0.004 SSIM.}
+           Blind: 17.0\,dB / 0.291 SSIM. Gap: +2.4\,dB.}
   \label{fig:astronaut}
 \end{figure}
 
@@ -312,7 +316,7 @@ three images.  The adversary's output is uniform noise in all cases.
   \includegraphics[width=\linewidth]{results_chelsea.pdf}
   \caption{Results on the \emph{chelsea} image.
            Non-blind: 23.6\,dB / 0.762 SSIM.
-           Blind: 5.8\,dB / 0.007 SSIM.}
+           Blind: 20.7\,dB / 0.413 SSIM. Gap: +2.9\,dB.}
   \label{fig:chelsea}
 \end{figure}
 
@@ -515,9 +519,11 @@ when training data and the generator are available.
 \label{sec:conclusion}
 
 We have demonstrated that a metasurface SV-PSF can serve as a practical
-optical encryption key, with a security gap of approximately $15$--$18$\,dB
-between an authorized non-blind decoder and a state-of-the-art blind
-adversary.  The gap is fundamentally rooted in the spatial variation and
+optical encryption key.  With the unoptimized PSF, the security gap is
+$2$--$3$\,dB between an authorized non-blind decoder and the blind
+adversary (Unsupervised Wiener-Hunt); this baseline is expected to grow
+significantly once end-to-end PSF optimization is applied.
+The gap is fundamentally rooted in the spatial variation and
 ring-shaped morphology of the metasurface PSF, which violates the assumptions
 of all spatially-uniform blind deblurring methods.
 

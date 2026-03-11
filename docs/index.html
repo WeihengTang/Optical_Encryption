@@ -127,9 +127,10 @@
           <strong>Fig. 1.</strong>
           From left to right: original scene, encrypted image (SV-PSF blur),
           authorized recovery (non-blind Wiener, 23.6&thinsp;dB PSNR),
-          and blind adversary attempt (Unsupervised Wiener-Hunt, 5.8&thinsp;dB PSNR).
-          The <strong>+17.8&thinsp;dB security gap</strong> renders the adversary's output
-          visually unrecognizable while the authorized receiver reconstructs the scene clearly.
+          and blind adversary attempt (Unsupervised Wiener-Hunt, 20.7&thinsp;dB PSNR).
+          The <strong>+2.9&thinsp;dB security gap</strong> with the current unoptimized PSF;
+          the gap is expected to widen significantly once the PSF is optimized via
+          the differentiable metasurface generator.
         </figcaption>
       </figure>
     </div>
@@ -464,22 +465,22 @@
             <td>camera</td>
             <td>21.0 / 0.686</td>
             <td class="cell-auth">20.5 / 0.679</td>
-            <td class="cell-adv">4.8 / 0.005</td>
-            <td class="cell-gap">+15.7</td>
+            <td class="cell-adv">18.1 / 0.335</td>
+            <td class="cell-gap">+2.4</td>
           </tr>
           <tr>
             <td>astronaut</td>
             <td>18.9 / 0.627</td>
             <td class="cell-auth">19.4 / 0.650</td>
-            <td class="cell-adv">4.7 / 0.004</td>
-            <td class="cell-gap">+14.7</td>
+            <td class="cell-adv">17.0 / 0.291</td>
+            <td class="cell-gap">+2.4</td>
           </tr>
           <tr>
             <td>chelsea</td>
             <td>24.3 / 0.760</td>
             <td class="cell-auth">23.6 / 0.762</td>
-            <td class="cell-adv">5.8 / 0.007</td>
-            <td class="cell-gap">+17.8</td>
+            <td class="cell-adv">20.7 / 0.413</td>
+            <td class="cell-gap">+2.9</td>
           </tr>
         </tbody>
       </table>
@@ -496,21 +497,21 @@
         <img src="./static/camera_panel.png" alt="Results panel for the camera test image.">
         <figcaption>
           <strong>Fig. 4.</strong>
-          Results on the <em>camera</em> image. Non-blind: 20.5&thinsp;dB; Blind: 4.8&thinsp;dB.
+          Results on the <em>camera</em> image. Non-blind: 20.5&thinsp;dB; Blind: 18.1&thinsp;dB; Gap: +2.4&thinsp;dB.
         </figcaption>
       </figure>
       <figure class="content-figure" style="margin-top: 1.5rem;">
         <img src="./static/astronaut_panel.png" alt="Results panel for the astronaut test image.">
         <figcaption>
           <strong>Fig. 5.</strong>
-          Results on the <em>astronaut</em> image. Non-blind: 19.4&thinsp;dB; Blind: 4.7&thinsp;dB.
+          Results on the <em>astronaut</em> image. Non-blind: 19.4&thinsp;dB; Blind: 17.0&thinsp;dB; Gap: +2.4&thinsp;dB.
         </figcaption>
       </figure>
       <figure class="content-figure" style="margin-top: 1.5rem;">
         <img src="./static/chelsea_panel.png" alt="Results panel for the chelsea test image.">
         <figcaption>
           <strong>Fig. 6.</strong>
-          Results on the <em>chelsea</em> image. Non-blind: 23.6&thinsp;dB; Blind: 5.8&thinsp;dB.
+          Results on the <em>chelsea</em> image. Non-blind: 23.6&thinsp;dB; Blind: 20.7&thinsp;dB; Gap: +2.9&thinsp;dB.
         </figcaption>
       </figure>
     </div>
