@@ -35,6 +35,9 @@ for name in NAMES:
     nb  = non_blind_deblur(blurred, PSF, kernel_size=71, reg=5e-2)
     bl  = blind_wiener(blurred)
 
+    np.save(str(OUT_DIR / f'wiener_nb_{name}.npy'), nb)
+    np.save(str(OUT_DIR / f'uwh_{name}.npy'),       bl)
+
     wiener_results[name] = compute_all(orig, nb)
     uwh_results[name]    = compute_all(orig, bl)
 
