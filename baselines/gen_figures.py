@@ -32,13 +32,13 @@ STATIC_DIR.mkdir(parents=True, exist_ok=True)
 
 plt.rcParams.update({
     'font.family':        'DejaVu Sans',
-    'font.size':          8,
-    'axes.titlesize':     8,
-    'axes.labelsize':     8,
+    'font.size':          9,
+    'axes.titlesize':     9,
+    'axes.labelsize':     9,
     'figure.dpi':         150,
     'savefig.dpi':        150,
     'savefig.bbox':       'tight',
-    'savefig.pad_inches': 0.05,
+    'savefig.pad_inches': 0.08,
 })
 
 IMAGES  = ['camera', 'astronaut', 'chelsea']
@@ -110,8 +110,9 @@ def fig_panels():
             arrays.append(arr)
 
         n_cols = len(arrays)
+        # Tall enough to fit image + 3-line title comfortably
         fig, axes = plt.subplots(1, n_cols,
-                                 figsize=(2.2 * n_cols, 2.6))
+                                 figsize=(2.4 * n_cols, 4.2))
 
         for ax, arr, title in zip(axes, arrays, titles):
             if arr is not None:
@@ -119,17 +120,29 @@ def fig_panels():
                           interpolation='bilinear')
             else:
                 ax.text(0.5, 0.5, 'N/A', ha='center', va='center',
-                        transform=ax.transAxes, fontsize=9, color='gray')
+                        transform=ax.transAxes, fontsize=10, color='gray')
                 ax.set_facecolor('#f0f0f0')
             color = (ADV_COLOR if '[ADV]' in title
                      else AUTH_COLOR if '[AUTH]' in title
                      else '#444')
-            ax.set_title(title, fontsize=6.5, pad=3, color=color)
+            # Split into header (bold, colored) and metric line (normal, dark)
+            lines = title.split('\n')
+            header  = lines[0]           # e.g. "[AUTH] Wiener (non-blind)"
+            metrics = '\n'.join(lines[1:]) if len(lines) > 1 else ''
+            ax.set_title(header, fontsize=9, pad=4, color=color,
+                         fontweight='bold')
+            if metrics:
+                ax.text(0.5, -0.03, metrics, transform=ax.transAxes,
+                        fontsize=8, ha='center', va='top',
+                        color='#333', fontweight='normal',
+                        linespacing=1.35)
             ax.axis('off')
 
-        fig.suptitle(f'Image: {img_name}', fontsize=9,
-                     fontweight='bold', y=1.01)
-        plt.tight_layout(pad=0.4)
+        # Embed image name as a text label at the top-left instead of suptitle
+        fig.text(0.01, 0.98, f'Image: {img_name.capitalize()}',
+                 fontsize=10, fontweight='bold', color='#222',
+                 va='top', ha='left')
+        plt.tight_layout(pad=0.6, rect=[0, 0, 1, 0.95])
         out = FIG_DIR / f'panel_{img_name}.png'
         fig.savefig(out)
         fig.savefig(STATIC_DIR / f'panel_{img_name}.png')
