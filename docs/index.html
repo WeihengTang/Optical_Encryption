@@ -228,52 +228,159 @@
 
     <h2 class="title is-3 section-title">Method</h2>
 
-    <div class="columns is-centered">
+    <!-- ── Tab bar ── -->
+    <div class="method-tabs" role="tablist" aria-label="Baseline methods">
 
-      <!-- Authorized -->
-      <div class="column">
-        <div class="content method-card method-card-auth">
-          <h3 class="title is-5">Authorized Decoder (Non-blind)</h3>
-          <p>
-            The authorized receiver applies <strong>patch-wise Wiener deconvolution</strong>
-            with the known SV-PSF. Each of the 49 image patches is independently
-            deconvolved in the frequency domain:
-          </p>
-          \[
-            \hat{X}(\omega) = \frac{H^*(\omega)}{|H(\omega)|^2 + \lambda} \cdot Y(\omega)
-          \]
-          <p>
-            where \(H(\omega)\) is the DFT of the local PSF kernel, \(Y(\omega)\) is the
-            DFT of the observed patch, and \(\lambda = 5 \times 10^{-2}\) is the
-            regularisation constant. The kernel is zero-padded and circularly shifted so
-            that its centre lies at array position \((0,0)\) before computing the DFT,
-            eliminating any phase offset in the recovered image.
-            A kernel crop of \(71 \times 71\) pixels is used, retaining 96.6% of the
-            total kernel energy.
-          </p>
-        </div>
+      <button class="method-tab active" role="tab"
+              aria-selected="true" aria-controls="tab-wiener" id="btn-wiener">
+        <span class="tab-role auth">AUTH</span>Wiener
+      </button>
+
+      <button class="method-tab" role="tab"
+              aria-selected="false" aria-controls="tab-dpir" id="btn-dpir">
+        <span class="tab-role auth">AUTH</span>DPIR
+      </button>
+
+      <button class="method-tab" role="tab"
+              aria-selected="false" aria-controls="tab-uwh" id="btn-uwh">
+        <span class="tab-role adv">ADV</span>Wiener-Hunt
+      </button>
+
+      <button class="method-tab" role="tab"
+              aria-selected="false" aria-controls="tab-nafnet" id="btn-nafnet">
+        <span class="tab-role adv">ADV</span>NAFNet
+      </button>
+
+      <button class="method-tab" role="tab"
+              aria-selected="false" aria-controls="tab-restormer" id="btn-restormer">
+        <span class="tab-role adv">ADV</span>Restormer
+      </button>
+
+    </div><!-- end .method-tabs -->
+
+    <!-- ── Tab panels ── -->
+    <div class="method-tab-panels">
+
+      <!-- ── 1. Wiener (AUTH) ── -->
+      <div id="tab-wiener" class="method-tab-panel active content"
+           role="tabpanel" aria-labelledby="btn-wiener">
+        <h3 class="title is-5">Wiener Deconvolution (Authorized, Non-blind)</h3>
+        <p>
+          The authorized receiver applies <strong>patch-wise Wiener deconvolution</strong>
+          with the known SV-PSF. The full \(1008 \times 1008\) image is processed with
+          all 49 local kernels, and the per-pixel outputs are blended with bilinear weights
+          to avoid grid artifacts. Each kernel contribution is computed in the frequency domain:
+        </p>
+        \[
+          \hat{X}_{ij}(\omega) = \frac{H_{ij}^*(\omega)}{|H_{ij}(\omega)|^2 + \lambda}
+          \cdot Y(\omega)
+        \]
+        <p>
+          where \(H_{ij}(\omega)\) is the DFT of the \((i,j)\)-th PSF kernel,
+          \(Y(\omega)\) is the DFT of the full blurred image, and
+          \(\lambda = 5 \times 10^{-2}\) is the regularisation constant.
+          Each kernel is zero-padded to image size and circularly shifted so that its
+          centre lies at array position \((0,0)\) before the DFT, eliminating phase offset.
+          A \(71 \times 71\) crop retaining 96.6% of total kernel energy is used.
+        </p>
       </div>
 
-      <!-- Adversary -->
-      <div class="column">
-        <div class="content method-card method-card-adv">
-          <h3 class="title is-5">Blind Adversary</h3>
-          <p>
-            The adversary applies the <strong>Unsupervised Wiener-Hunt</strong> algorithm
-            (a Gibbs sampler under a Gaussian image prior) to the entire blurred image,
-            with no knowledge of the PSF. The algorithm jointly estimates the latent image
-            and a single spatially-uniform kernel via alternating Bayesian inference steps.
-          </p>
-          <p>
-            Because the true PSF is spatially varying and ring-shaped, this uniform
-            assumption is fundamentally violated: the estimator converges to a wrong,
-            smeared kernel, producing a recovery that is visually indistinguishable
-            from noise. No amount of iteration mitigates this structural mismatch.
-          </p>
-        </div>
+      <!-- ── 2. DPIR (AUTH) ── -->
+      <div id="tab-dpir" class="method-tab-panel content"
+           role="tabpanel" aria-labelledby="btn-dpir" aria-hidden="true">
+        <h3 class="title is-5">DPIR — Deep Plug-and-Play (Authorized, Non-blind)</h3>
+        <p>
+          DPIR <em>(Zhang et al., TPAMI 2022)</em> casts image restoration as a
+          Plug-and-Play Half-Quadratic Splitting (PnP-HQS) problem, replacing the
+          hand-crafted prior with a pretrained <strong>DRUNet</strong> denoiser.
+          Because the authorized receiver knows the full SV-PSF, we perform a single
+          <em>global</em> Wiener deconvolution step on the blurred observation, then
+          iteratively refine with DRUNet under an annealed noise schedule:
+        </p>
+        \[
+          z_k = \alpha_k\,\hat{X}_\text{Wiener} + (1-\alpha_k)\,x_k, \qquad
+          x_{k+1} = \mathcal{D}_{\sigma_k}(z_k)
+        \]
+        <p>
+          where \(\hat{X}_\text{Wiener}\) is the fixed Wiener output,
+          \(\mathcal{D}_{\sigma_k}\) is DRUNet conditioned on noise level
+          \(\sigma_k\), and \(\alpha_k = 1 - k/K\) linearly decays the anchor weight
+          over \(K=8\) iterations. The noise level is annealed from
+          \(\sigma_0 = 49/255\) to \(\sigma_{K-1} = 2.55/255\).
+          This keeps the estimate grounded to the data-fidelity Wiener solution
+          while progressively removing ringing artifacts.
+        </p>
       </div>
 
-    </div>
+      <!-- ── 3. Wiener-Hunt (ADV) ── -->
+      <div id="tab-uwh" class="method-tab-panel content"
+           role="tabpanel" aria-labelledby="btn-uwh" aria-hidden="true">
+        <h3 class="title is-5">Unsupervised Wiener-Hunt (Adversary, Blind)</h3>
+        <p>
+          The adversary applies the <strong>Unsupervised Wiener-Hunt</strong> algorithm
+          <em>(Pereyra et al., 2015)</em> — a Gibbs sampler under a Gaussian image prior
+          — to the blurred image with <em>no knowledge of the PSF</em>.
+          The algorithm jointly estimates the latent image and a single
+          spatially-uniform kernel via alternating Bayesian inference steps:
+        </p>
+        \[
+          p(x,h \mid y) \;\propto\; p(y \mid x,h)\,p(x)\,p(h)
+        \]
+        <p>
+          Because the true PSF is spatially varying and ring-shaped, the uniform
+          kernel assumption is fundamentally violated: the Gibbs sampler converges
+          to a smeared, incorrect kernel, and no amount of iteration can mitigate
+          this structural mismatch. This method achieves only 2–3 dB below the
+          authorized Wiener decoder, establishing a baseline security gap.
+        </p>
+      </div>
+
+      <!-- ── 4. NAFNet (ADV) ── -->
+      <div id="tab-nafnet" class="method-tab-panel content"
+           role="tabpanel" aria-labelledby="btn-nafnet" aria-hidden="true">
+        <h3 class="title is-5">NAFNet (Adversary, Blind Deep Network)</h3>
+        <p>
+          <strong>NAFNet</strong> <em>(Chen et al., ECCV 2022)</em> is a
+          state-of-the-art blind image restoration network based on a
+          Nonlinear Activation Free block design with simplified channel attention.
+          We apply the pretrained GoPro motion-deblurring checkpoint
+          <em>zero-shot</em> — no fine-tuning on our SV-PSF data.
+        </p>
+        <p>
+          The network was trained on RGB images; we repeat the grayscale input
+          across three channels for inference and average the output channels back
+          to grayscale. Inference is performed on overlapping
+          \(256 \times 256\) tiles with a 32-pixel Hann-windowed overlap
+          to handle the \(1008 \times 1008\) input without border artifacts.
+          Despite having no knowledge of the PSF structure or encryption key,
+          NAFNet <strong>closes the security gap to \(\approx 0\,\text{dB}\)</strong>,
+          recovering image quality comparable to the authorized decoder.
+        </p>
+      </div>
+
+      <!-- ── 5. Restormer (ADV) ── -->
+      <div id="tab-restormer" class="method-tab-panel content"
+           role="tabpanel" aria-labelledby="btn-restormer" aria-hidden="true">
+        <h3 class="title is-5">Restormer (Adversary, Blind Deep Network)</h3>
+        <p>
+          <strong>Restormer</strong> <em>(Zamir et al., CVPR 2022)</em> is a
+          hierarchical encoder-decoder Transformer for high-resolution image restoration.
+          Its multi-Dconv Head Transposed Attention (MDTA) and Gated-Dconv
+          Feed-Forward Network (GDFN) enable efficient global context modeling
+          without quadratic self-attention cost.
+        </p>
+        <p>
+          We apply the pretrained motion-deblurring checkpoint zero-shot, using
+          the same tiled inference strategy as NAFNet (\(256 \times 256\) tiles,
+          32-pixel Hann-windowed overlap). Like NAFNet, Restormer operates
+          entirely blind — it receives only the encrypted image without any
+          knowledge of the PSF. The results confirm the trend:
+          SOTA blind Transformers <strong>eliminate the security gap</strong>,
+          motivating adversarial PSF optimization in Phase 2.
+        </p>
+      </div>
+
+    </div><!-- end .method-tab-panels -->
 
     <!-- ── Optimization Framework ── -->
     <div style="margin-top: 2.5rem;">
@@ -715,6 +822,44 @@
   </div>
 </footer>
 
+
+
+<script>
+(function () {
+  // Track which panels have been MathJax-typeset already
+  var typeset = new Set(['tab-wiener']); // first panel rendered on load
+
+  document.querySelectorAll('.method-tab').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var targetId = btn.getAttribute('aria-controls');
+
+      // Deactivate all buttons and panels
+      document.querySelectorAll('.method-tab').forEach(function (b) {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      document.querySelectorAll('.method-tab-panel').forEach(function (p) {
+        p.classList.remove('active');
+        p.setAttribute('aria-hidden', 'true');
+      });
+
+      // Activate the clicked one
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      var panel = document.getElementById(targetId);
+      panel.classList.add('active');
+      panel.removeAttribute('aria-hidden');
+
+      // Re-render MathJax for panels that haven't been typeset yet
+      if (!typeset.has(targetId) && window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise([panel]).then(function () {
+          typeset.add(targetId);
+        });
+      }
+    });
+  });
+})();
+</script>
 
 </body>
 </html>

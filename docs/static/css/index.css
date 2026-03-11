@@ -154,17 +154,74 @@ strong            { color: var(--text-primary); font-weight: 600; }
   margin-right: auto;
 }
 
-/* ── Method cards ────────────────────────────────────────────────── */
-.method-card {
-  background: var(--bg-page);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 1.4rem 1.6rem;
-  height: 100%;
+/* ── Method tabs ─────────────────────────────────────────────────── */
+.method-tabs {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-bottom: 2px solid var(--border-strong);
+  scrollbar-width: none;
 }
-.method-card h3.title { color: var(--text-primary) !important; }
-.method-card-auth { border-left: 3px solid #6ee7b7; }  /* muted green */
-.method-card-adv  { border-left: 3px solid #fca5a5; }  /* muted red   */
+.method-tabs::-webkit-scrollbar { display: none; }
+
+.method-tab {
+  flex-shrink: 0;
+  padding: 0.6rem 1.1rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+.method-tab:hover { color: var(--text-primary); background: var(--bg-alt); }
+.method-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+.tab-role {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.1em 0.42em;
+  border-radius: 3px;
+  line-height: 1.6;
+}
+.tab-role.auth { background: #dcfce7; color: #166534; }
+.tab-role.adv  { background: #fee2e2; color: #991b1b; }
+
+.method-tab-panels {
+  border: 1px solid var(--border-strong);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  background: var(--bg-page);
+}
+.method-tab-panel {
+  display: none;
+  padding: 1.6rem 1.8rem;
+  animation: tab-fadein 0.18s ease;
+}
+.method-tab-panel.active { display: block; }
+
+@keyframes tab-fadein {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* keep old card classes harmless if referenced elsewhere */
+.method-card { padding: 0; }
+.method-card-auth { border-left: none; }
+.method-card-adv  { border-left: none; }
 
 /* ═══════════════════════════════════════════════════════════════════
    PIPELINE DIAGRAM (native HTML/CSS)
