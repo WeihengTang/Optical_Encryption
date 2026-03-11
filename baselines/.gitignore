@@ -2,3 +2,4 @@ third_party/
 weights/
 data/
 results/*.npy
+# figures/ is intentionally NOT ignored — commit and push these
