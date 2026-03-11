@@ -246,32 +246,47 @@ All experiments run on CPU; no training data are required at this stage.
 
 \subsection{Quantitative Results}
 
-Table~\ref{tab:results} summarises the results.  The authorized non-blind
-decoder achieves $+2.4$--$+2.9$\,dB higher PSNR than the blind adversary
-(Unsupervised Wiener-Hunt with a Gaussian PSF prior) for this unoptimized PSF.
+Table~\ref{tab:results} summarises all baseline results.
+Against a classical blind adversary (Unsupervised Wiener-Hunt), the
+authorized Wiener decoder retains a $+2$--$+3$\,dB advantage.
+However, state-of-the-art blind networks (NAFNet, Restormer) applied
+\emph{zero-shot} — with no knowledge of the PSF — close this gap to
+$\approx 0$\,dB, matching the authorized receiver entirely.
+This demonstrates that the unoptimized ring-shaped PSF provides no
+security against modern deep image priors, and directly motivates the
+adversarial PSF optimization described in Section~\ref{sec:optimization}.
 
 \begin{table}[H]
   \centering
-  \caption{PSNR (dB) and SSIM for three test images.  All metrics vs.\ the
-           clean original.  ``Gap'' = (non-blind PSNR) $-$ (blind PSNR).}
+  \caption{PSNR\,(dB) / SSIM for all baselines on three test images.
+           Authorized methods (green) know the PSF; adversary methods
+           (red) do not.}
   \label{tab:results}
   \small
-  \begin{tabular}{l
-                  c c
-                  >{\columncolor{rowauth}}c >{\columncolor{rowauth}}c
-                  >{\columncolor{rowadv}}c  >{\columncolor{rowadv}}c
-                  >{\columncolor{rowgap}}c}
+  \begin{tabular}{l l
+                  >{\columncolor{rowauth}}c
+                  >{\columncolor{rowauth}}c
+                  >{\columncolor{rowauth}}c}
     \toprule
-    & \multicolumn{2}{c}{Encrypted}
-    & \multicolumn{2}{c}{Non-blind (authorized)}
-    & \multicolumn{2}{c}{Blind (adversary)}
-    & \\
-    \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
-    Image & PSNR & SSIM & PSNR & SSIM & PSNR & SSIM & Gap (dB) \\
+    Role & Method & camera & astronaut & chelsea \\
     \midrule
-    camera    & 21.0 & 0.686 & 20.5 & 0.679 & 18.1 & 0.335 & \textbf{+2.4} \\
-    astronaut & 18.9 & 0.627 & 19.4 & 0.650 & 17.0 & 0.291 & \textbf{+2.4} \\
-    chelsea   & 24.3 & 0.760 & 23.6 & 0.762 & 20.7 & 0.413 & \textbf{+2.9} \\
+    \multirow{2}{*}{\textsc{auth}}
+      & Wiener (non-blind)       & 20.5 / 0.68 & 19.4 / 0.65 & 23.6 / 0.76 \\
+      & DPIR (non-blind, deep)   & 20.5 / 0.68 & 19.3 / 0.65 & 23.5 / 0.76 \\
+    \midrule
+  \end{tabular}
+  \vspace{2pt}
+  \begin{tabular}{l l
+                  >{\columncolor{rowadv}}c
+                  >{\columncolor{rowadv}}c
+                  >{\columncolor{rowadv}}c}
+    \toprule
+    Role & Method & camera & astronaut & chelsea \\
+    \midrule
+    \multirow{3}{*}{\textsc{adv}}
+      & Wiener-Hunt (classical)       & 18.1 / 0.34 & 17.0 / 0.29 & 20.7 / 0.41 \\
+      & NAFNet (zero-shot)            & 20.5 / 0.69 & 18.9 / 0.64 & 23.8 / 0.77 \\
+      & Restormer (zero-shot)         & 20.4 / 0.69 & 18.8 / 0.63 & 23.7 / 0.76 \\
     \bottomrule
   \end{tabular}
 \end{table}

@@ -461,42 +461,55 @@
       <table class="table is-fullwidth results-table">
         <thead>
           <tr>
-            <th>Image</th>
-            <th>Encrypted<br><span class="col-sub">PSNR / SSIM</span></th>
-            <th class="col-auth">Non-blind (authorized)<br><span class="col-sub">PSNR / SSIM</span></th>
-            <th class="col-adv">Blind (adversary)<br><span class="col-sub">PSNR / SSIM</span></th>
-            <th class="col-gap">Gap \(\uparrow\)<br><span class="col-sub">dB</span></th>
+            <th>Role</th>
+            <th>Method</th>
+            <th>camera<br><span class="col-sub">PSNR&thinsp;/&thinsp;SSIM</span></th>
+            <th>astronaut<br><span class="col-sub">PSNR&thinsp;/&thinsp;SSIM</span></th>
+            <th>chelsea<br><span class="col-sub">PSNR&thinsp;/&thinsp;SSIM</span></th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>camera</td>
-            <td>21.0 / 0.686</td>
-            <td class="cell-auth">20.5 / 0.679</td>
-            <td class="cell-adv">18.1 / 0.335</td>
-            <td class="cell-gap">+2.4</td>
+            <td rowspan="2" class="cell-auth" style="font-weight:600;">AUTH</td>
+            <td class="cell-auth">Wiener (non-blind)</td>
+            <td class="cell-auth">20.5 / 0.68</td>
+            <td class="cell-auth">19.4 / 0.65</td>
+            <td class="cell-auth">23.6 / 0.76</td>
           </tr>
           <tr>
-            <td>astronaut</td>
-            <td>18.9 / 0.627</td>
-            <td class="cell-auth">19.4 / 0.650</td>
-            <td class="cell-adv">17.0 / 0.291</td>
-            <td class="cell-gap">+2.4</td>
+            <td class="cell-auth">DPIR (non-blind, deep)</td>
+            <td class="cell-auth">20.5 / 0.68</td>
+            <td class="cell-auth">19.3 / 0.65</td>
+            <td class="cell-auth">23.5 / 0.76</td>
           </tr>
           <tr>
-            <td>chelsea</td>
-            <td>24.3 / 0.760</td>
-            <td class="cell-auth">23.6 / 0.762</td>
-            <td class="cell-adv">20.7 / 0.413</td>
-            <td class="cell-gap">+2.9</td>
+            <td rowspan="3" class="cell-adv" style="font-weight:600;">ADV</td>
+            <td class="cell-adv">Wiener-Hunt (classical blind)</td>
+            <td class="cell-adv">18.1 / 0.34</td>
+            <td class="cell-adv">17.0 / 0.29</td>
+            <td class="cell-adv">20.7 / 0.41</td>
+          </tr>
+          <tr>
+            <td class="cell-adv">NAFNet (zero-shot)</td>
+            <td class="cell-adv">20.5 / 0.69</td>
+            <td class="cell-adv">18.9 / 0.64</td>
+            <td class="cell-adv">23.8 / 0.77</td>
+          </tr>
+          <tr>
+            <td class="cell-adv">Restormer (zero-shot)</td>
+            <td class="cell-adv">20.4 / 0.69</td>
+            <td class="cell-adv">18.8 / 0.63</td>
+            <td class="cell-adv">23.7 / 0.76</td>
           </tr>
         </tbody>
       </table>
     </div>
     <p class="table-note">
-      PSNR in dB, SSIM dimensionless. Higher is better for both metrics.
-      Non-blind: patch-wise Wiener deconvolution with known SV-PSF (\(\lambda = 5 \times 10^{-2}\)).
-      Blind: Unsupervised Wiener-Hunt applied to the full image with no PSF knowledge.
+      AUTH methods know the PSF; ADV methods do not.
+      Against classical blind (Wiener-Hunt), the authorized decoder holds a +2&ndash;3&thinsp;dB advantage.
+      However, SOTA blind networks (NAFNet, Restormer) applied zero-shot close the gap to &approx;0&thinsp;dB,
+      matching the authorized receiver without PSF knowledge.
+      This motivates adversarial PSF optimization.
     </p>
 
     <!-- Visual panels -->
