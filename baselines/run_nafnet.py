@@ -15,23 +15,25 @@ Reference:
   Chen et al., "Simple Baselines for Image Restoration", ECCV 2022.
 """
 import sys
+import types
 import importlib.util
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Patch the module removed in torchvision>=0.14 before basicsr tries to
+# import it.  This must happen before any basicsr import, direct or indirect.
+import torchvision.transforms.functional as _F
+_fake = types.ModuleType('torchvision.transforms.functional_tensor')
+_fake.rgb_to_grayscale = _F.rgb_to_grayscale
+sys.modules['torchvision.transforms.functional_tensor'] = _fake
 
 import json
 import numpy as np
 import torch
 
-# Load NAFNet_arch directly from the cloned repo to avoid the broken
-# installed basicsr (torchvision.transforms.functional_tensor was removed
-# in newer torchvision versions).
-_arch_path = (Path(__file__).parent / 'third_party' / 'NAFNet' /
-              'basicsr' / 'models' / 'archs' / 'NAFNet_arch.py')
-_spec = importlib.util.spec_from_file_location('NAFNet_arch', _arch_path)
-_mod  = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(_mod)
-NAFNet = _mod.NAFNet
+# Prioritise the NAFNet repo's own basicsr over the installed one.
+sys.path.insert(0, str(Path(__file__).parent / 'third_party' / 'NAFNet'))
+from basicsr.models.archs.NAFNet_arch import NAFNet
 
 from src.metrics import compute_all
 

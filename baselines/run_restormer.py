@@ -15,22 +15,25 @@ Reference:
   Image Restoration", CVPR 2022.
 """
 import sys
+import types
 import importlib.util
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Patch the module removed in torchvision>=0.14 before basicsr tries to
+# import it.  This must happen before any basicsr import, direct or indirect.
+import torchvision.transforms.functional as _F
+_fake = types.ModuleType('torchvision.transforms.functional_tensor')
+_fake.rgb_to_grayscale = _F.rgb_to_grayscale
+sys.modules['torchvision.transforms.functional_tensor'] = _fake
 
 import json
 import numpy as np
 import torch
 
-# Load restormer_arch directly from the cloned repo to avoid the broken
-# installed basicsr (torchvision.transforms.functional_tensor conflict).
-_arch_path = (Path(__file__).parent / 'third_party' / 'Restormer' /
-              'basicsr' / 'models' / 'archs' / 'restormer_arch.py')
-_spec = importlib.util.spec_from_file_location('restormer_arch', _arch_path)
-_mod  = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(_mod)
-Restormer = _mod.Restormer
+# Prioritise the Restormer repo's own basicsr over the installed one.
+sys.path.insert(0, str(Path(__file__).parent / 'third_party' / 'Restormer'))
+from basicsr.models.archs.restormer_arch import Restormer
 
 from src.metrics import compute_all
 
