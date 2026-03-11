@@ -26,6 +26,9 @@ DATA_DIR    = Path(__file__).parent / 'data'
 RESULTS_DIR = Path(__file__).parent / 'results'
 FIG_DIR     = Path(__file__).parent / 'figures'
 FIG_DIR.mkdir(exist_ok=True)
+# Also write into docs/static so GitHub Pages can serve them
+STATIC_DIR  = Path(__file__).parent.parent / 'docs' / 'static' / 'baselines'
+STATIC_DIR.mkdir(parents=True, exist_ok=True)
 
 plt.rcParams.update({
     'font.family':        'DejaVu Sans',
@@ -129,6 +132,7 @@ def fig_panels():
         plt.tight_layout(pad=0.4)
         out = FIG_DIR / f'panel_{img_name}.png'
         fig.savefig(out)
+        fig.savefig(STATIC_DIR / f'panel_{img_name}.png')
         plt.close(fig)
         print(f'  panel_{img_name}.png')
 
@@ -189,6 +193,7 @@ def fig_psnr_bar():
 
     plt.tight_layout()
     fig.savefig(FIG_DIR / 'psnr_bar.png')
+    fig.savefig(STATIC_DIR / 'psnr_bar.png')
     plt.close(fig)
     print('  psnr_bar.png')
 
@@ -235,6 +240,7 @@ def fig_gap_summary():
     ax.legend(fontsize=8, framealpha=0.9, edgecolor='#ccc')
     plt.tight_layout()
     fig.savefig(FIG_DIR / 'gap_summary.png')
+    fig.savefig(STATIC_DIR / 'gap_summary.png')
     plt.close(fig)
     print('  gap_summary.png')
 

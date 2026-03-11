@@ -535,6 +535,65 @@
           Results on the <em>chelsea</em> image. Non-blind: 23.6&thinsp;dB; Blind: 20.7&thinsp;dB; Gap: +2.9&thinsp;dB.
         </figcaption>
       </figure>
+
+      <!-- Deep baseline comparison -->
+      <h3 class="title is-5" style="margin-top:2.5rem;">Deep Baseline Comparison</h3>
+      <p style="margin-bottom:1rem;">
+        Side-by-side reconstruction quality for all five methods.
+        Authorized methods (green border) know the PSF; adversary methods (red border) do not.
+      </p>
+
+      <figure class="content-figure">
+        <img src="./static/baselines/panel_camera.png"
+             alt="All-method comparison panel for the camera image."
+             style="width:100%;">
+        <figcaption>
+          <strong>Fig. 7.</strong> <em>camera</em> —
+          Original | Encrypted | Wiener-NB | DPIR | Wiener-Hunt | NAFNet | Restormer.
+          NAFNet and Restormer (adversary, no PSF) match the authorized decoder.
+        </figcaption>
+      </figure>
+
+      <figure class="content-figure" style="margin-top:1.5rem;">
+        <img src="./static/baselines/panel_astronaut.png"
+             alt="All-method comparison panel for the astronaut image."
+             style="width:100%;">
+        <figcaption>
+          <strong>Fig. 8.</strong> <em>astronaut</em> — same layout as Fig. 7.
+        </figcaption>
+      </figure>
+
+      <figure class="content-figure" style="margin-top:1.5rem;">
+        <img src="./static/baselines/panel_chelsea.png"
+             alt="All-method comparison panel for the chelsea image."
+             style="width:100%;">
+        <figcaption>
+          <strong>Fig. 9.</strong> <em>chelsea</em> — same layout as Fig. 7.
+        </figcaption>
+      </figure>
+
+      <figure class="content-figure" style="margin-top:1.5rem;">
+        <img src="./static/baselines/psnr_bar.png"
+             alt="PSNR bar chart for all methods and images."
+             style="max-width:680px; display:block; margin:0 auto;">
+        <figcaption>
+          <strong>Fig. 10.</strong>
+          PSNR for all methods. Blue bars = authorized (AUTH), red bars = adversary (ADV).
+          SOTA blind networks (NAFNet, Restormer) reach AUTH-level PSNR without the PSF.
+        </figcaption>
+      </figure>
+
+      <figure class="content-figure" style="margin-top:1.5rem;">
+        <img src="./static/baselines/gap_summary.png"
+             alt="Security gap summary chart."
+             style="max-width:480px; display:block; margin:0 auto;">
+        <figcaption>
+          <strong>Fig. 11.</strong>
+          Security gap: best authorized vs. best adversary PSNR per image.
+          The near-zero (or negative) gap motivates adversarial PSF optimization.
+        </figcaption>
+      </figure>
+
     </div>
 
   </div>
