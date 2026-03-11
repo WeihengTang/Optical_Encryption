@@ -334,21 +334,29 @@
                   </div>
                 </div>
               </div>
-              <div class="flow-merge-indicator">
-                <div class="merge-arrows">
-                  <span class="merge-arr left-arr"></span>
-                  <span class="merge-arr right-arr"></span>
+              <div class="flow-split">
+                <div class="split-col">
+                  <div class="flow-node node-loss">
+                    \(\mathcal{L}_\mathrm{nb}\)<br>
+                    <span class="node-sub">minimize PSNR loss</span>
+                  </div>
+                  <div class="flow-arrow-v"></div>
+                  <div class="flow-node node-update">
+                    Update \(\theta_\mathrm{nb}\)<br>
+                    <span class="node-sub">PSF \(\theta\) frozen</span>
+                  </div>
                 </div>
-                <div class="merge-line"></div>
-              </div>
-              <div class="flow-node node-loss">
-                Total loss \(\mathcal{L}\)<br>
-                <span class="node-sub">\(\mathcal{L} = \mathcal{L}_\mathrm{nb} + \lambda\,\mathcal{L}_\mathrm{b}\)</span>
-              </div>
-              <div class="flow-arrow-v"></div>
-              <div class="flow-node node-update">
-                Update \(D_\mathrm{nb},\,D_\mathrm{b}\)<br>
-                <span class="node-sub">PSF \(\theta\) frozen</span>
+                <div class="split-col">
+                  <div class="flow-node node-loss">
+                    \(\mathcal{L}_\mathrm{b}\)<br>
+                    <span class="node-sub">minimize PSNR loss</span>
+                  </div>
+                  <div class="flow-arrow-v"></div>
+                  <div class="flow-node node-update">
+                    Update \(\theta_\mathrm{b}\)<br>
+                    <span class="node-sub">PSF \(\theta\) frozen</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

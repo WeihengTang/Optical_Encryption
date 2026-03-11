@@ -406,30 +406,34 @@ stabilizes, or for a fixed number of outer iterations.
 ]
 
 % ─── Phase 1 nodes ───────────────────────────────────────────────────────────
-\node[ninput] (img)   at (0,  0)     {Training images $x$};
-\node[nblur]  (b1)    at (0, -1.55)  {Blur $B_\theta(x)$\\
-                                       {\scriptsize SV-PSF, $\theta$ fixed}};
+\node[ninput] (img)   at (0,  0)       {Training images $x$};
+\node[nblur]  (b1)    at (0, -1.55)   {Blur $B_\theta(x)$\\
+                                        {\scriptsize SV-PSF, $\theta$ fixed}};
 \node[nauth]  (dnb1)  at (-1.6, -3.25) {$D_\text{nb}$\\
-                                       {\scriptsize authorized\\receives $(y,\theta)$}};
+                                        {\scriptsize authorized\\receives $(y,\theta)$}};
 \node[nadv]   (db1)   at ( 1.6, -3.25) {$D_\text{b}$\\
                                         {\scriptsize adversary\\receives $y$ only}};
-\node[nloss]  (loss)  at (0, -5.0)  {Total loss $\mathcal{L}$\\
-                                      {\scriptsize $\mathcal{L} = \mathcal{L}_\text{nb}
-                                       + \lambda\mathcal{L}_\text{b}$}};
-\node[nupd]   (upd1)  at (0, -6.45) {Update $D_\text{nb},\,D_\text{b}$\\
-                                      {\scriptsize PSF $\theta$ frozen}};
+\node[nloss]  (lnb1)  at (-1.6, -5.0) {$\mathcal{L}_\text{nb}$\\
+                                        {\scriptsize minimize PSNR loss}};
+\node[nloss]  (lb1)   at ( 1.6, -5.0) {$\mathcal{L}_\text{b}$\\
+                                        {\scriptsize minimize PSNR loss}};
+\node[nupd]   (updnb) at (-1.6, -6.45){Update $\theta_\text{nb}$\\
+                                        {\scriptsize PSF $\theta$ frozen}};
+\node[nupd]   (updb)  at ( 1.6, -6.45){Update $\theta_\text{b}$\\
+                                        {\scriptsize PSF $\theta$ frozen}};
 
 % ─── Phase 1 arrows ──────────────────────────────────────────────────────────
 \draw[arr] (img)  -- (b1);
 \draw[arr] (b1)   -- (dnb1);
 \draw[arr] (b1)   -- (db1);
-\draw[arr] (dnb1) -- (loss);
-\draw[arr] (db1)  -- (loss);
-\draw[arr] (loss) -- (upd1);
+\draw[arr] (dnb1) -- (lnb1);
+\draw[arr] (db1)  -- (lb1);
+\draw[arr] (lnb1) -- (updnb);
+\draw[arr] (lb1)  -- (updb);
 
 % ─── Phase 1 bounding box ────────────────────────────────────────────────────
 \begin{scope}[on background layer]
-  \node[phasebox, fit=(img)(b1)(dnb1)(db1)(loss)(upd1)] (p1box) {};
+  \node[phasebox, fit=(img)(b1)(dnb1)(db1)(lnb1)(lb1)(updnb)(updb)] (p1box) {};
 \end{scope}
 \node[plabel, above=2pt of p1box] {Phase 1 — Train Decoders};
 
