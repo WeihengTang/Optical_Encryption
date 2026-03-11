@@ -110,9 +110,12 @@ def fig_panels():
             arrays.append(arr)
 
         n_cols = len(arrays)
-        # Tall enough to fit image + 3-line title comfortably
-        fig, axes = plt.subplots(1, n_cols,
-                                 figsize=(2.4 * n_cols, 4.2))
+        fig, axes = plt.subplots(1, n_cols, figsize=(2.4 * n_cols, 4.0))
+        # Explicit geometry: top band reserved for image-name label,
+        # bottom band reserved for metric text below each image.
+        # This sidesteps savefig.bbox='tight' collapsing the extra height.
+        fig.subplots_adjust(top=0.76, bottom=0.18, left=0.01,
+                            right=0.99, wspace=0.06)
 
         for ax, arr, title in zip(axes, arrays, titles):
             if arr is not None:
@@ -125,27 +128,30 @@ def fig_panels():
             color = (ADV_COLOR if '[ADV]' in title
                      else AUTH_COLOR if '[AUTH]' in title
                      else '#444')
-            # Split into header (bold, colored) and metric line (normal, dark)
-            lines = title.split('\n')
-            header  = lines[0]           # e.g. "[AUTH] Wiener (non-blind)"
+            lines   = title.split('\n')
+            header  = lines[0]
             metrics = '\n'.join(lines[1:]) if len(lines) > 1 else ''
-            ax.set_title(header, fontsize=9, pad=4, color=color,
+            # Bold coloured method name above the image
+            ax.set_title(header, fontsize=9, pad=5, color=color,
                          fontweight='bold')
+            # Metric values below the image — clip_on=False lets them
+            # sit in the bottom margin without being cropped
             if metrics:
-                ax.text(0.5, -0.03, metrics, transform=ax.transAxes,
+                ax.text(0.5, -0.06, metrics, transform=ax.transAxes,
                         fontsize=8, ha='center', va='top',
-                        color='#333', fontweight='normal',
-                        linespacing=1.35)
+                        color='#444', fontweight='normal',
+                        linespacing=1.4, clip_on=False)
             ax.axis('off')
 
-        # Embed image name as a text label at the top-left instead of suptitle
-        fig.text(0.01, 0.98, f'Image: {img_name.capitalize()}',
-                 fontsize=10, fontweight='bold', color='#222',
-                 va='top', ha='left')
-        plt.tight_layout(pad=0.6, rect=[0, 0, 1, 0.95])
+        # Image name in the reserved top band — centred, clearly separated
+        fig.text(0.5, 0.90, f'Image: {img_name.capitalize()}',
+                 fontsize=11, fontweight='bold', color='#222',
+                 va='center', ha='center')
+
         out = FIG_DIR / f'panel_{img_name}.png'
-        fig.savefig(out)
-        fig.savefig(STATIC_DIR / f'panel_{img_name}.png')
+        fig.savefig(out,         bbox_inches='tight', pad_inches=0.08)
+        fig.savefig(STATIC_DIR / f'panel_{img_name}.png',
+                    bbox_inches='tight', pad_inches=0.08)
         plt.close(fig)
         print(f'  panel_{img_name}.png')
 
