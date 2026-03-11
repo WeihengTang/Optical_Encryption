@@ -546,17 +546,24 @@ The gap is fundamentally rooted in the spatial variation and
 ring-shaped morphology of the metasurface PSF, which violates the assumptions
 of all spatially-uniform blind deblurring methods.
 
-Planned next steps, in order:
+Completed and planned milestones:
 \begin{enumerate}
-  \item \textbf{Week~2.}  Integrate the differentiable PSF generator.
+  \item \textbf{Weeks~1--3 (complete).}
+        Classical and deep baselines fully evaluated.
+        Smooth SV-PSF forward model, Wiener non-blind decoder, Unsupervised
+        Wiener-Hunt, DPIR, NAFNet, and Restormer all benchmarked.
+        Key finding: SOTA blind networks (NAFNet, Restormer) close the security
+        gap to $\approx 0$\,dB, confirming adversarial PSF optimization is necessary.
+  \item \textbf{Month~2.}
+        Integrate the differentiable PSF generator (co-worker's model).
+        Build the adversarial optimization loop
+        (Eq.~\ref{eq:objective}).
         Set up the DIV2K~\cite{agustsson2017div2k} training pipeline.
-  \item \textbf{Week~3.}  Replace the Wiener decoder with
-        DPIR or USRNet; replace the blind baseline with NAFNet or Restormer.
-        Re-evaluate the security gap.
-  \item \textbf{Month~2.}  Run the full adversarial PSF optimization loop
-        (Eq.~\ref{eq:objective}).  Add LPIPS~\cite{zhang2018lpips}
-        perceptual loss.  Ablation study over adversary strength.
-  \item \textbf{Month~3.}  Identify a fabrication-candidate PSF.
+        Add LPIPS~\cite{zhang2018lpips} perceptual loss.
+  \item \textbf{Month~3.}
+        Ablation study over adversary strength and PSF parameterization.
+        Identify a fabrication-candidate PSF with measurable security gap
+        against SOTA blind networks.
         Physical validation.  Paper draft.
 \end{enumerate}
 

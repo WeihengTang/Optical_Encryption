@@ -625,43 +625,41 @@
           <table class="table roadmap-table is-fullwidth">
             <tbody>
               <tr>
-                <td class="roadmap-phase roadmap-done">Now</td>
+                <td class="roadmap-phase roadmap-done">Week 1</td>
                 <td>
-                  Classical baselines on the current metasurface PSF —
-                  patch-wise Wiener (non-blind) vs. Unsupervised Wiener-Hunt (blind).
-                  Security gap of approximately 10&thinsp;dB demonstrated.
+                  Classical baselines: smooth SV-PSF forward model (bilinear blending),
+                  patch-wise Wiener non-blind decoder, Unsupervised Wiener-Hunt blind adversary.
                   <span class="tag is-light done-tag">Complete</span>
                 </td>
               </tr>
               <tr>
-                <td class="roadmap-phase">Week 2</td>
+                <td class="roadmap-phase roadmap-done">Week 2&ndash;3</td>
                 <td>
-                  Integrate the differentiable PSF generator (co-worker's model).
-                  Establish the DIV2K training pipeline.
-                </td>
-              </tr>
-              <tr>
-                <td class="roadmap-phase">Week 3</td>
-                <td>
-                  Replace classical baselines with deep networks:
-                  <a href="https://github.com/cszn/DPIR">DPIR</a> /
-                  <a href="https://github.com/cszn/USRNet">USRNet</a> (non-blind) and
-                  <a href="https://github.com/megvii-research/NAFNet">NAFNet</a> /
+                  Deep baselines evaluated zero-shot:
+                  <a href="https://github.com/cszn/DPIR">DPIR</a> (non-blind, deep denoiser prior),
+                  <a href="https://github.com/megvii-research/NAFNet">NAFNet</a> and
                   <a href="https://github.com/swz30/Restormer">Restormer</a> (blind adversary).
+                  Key finding: SOTA blind networks close the security gap to &approx;0&thinsp;dB,
+                  confirming adversarial PSF optimization is necessary.
+                  <span class="tag is-light done-tag">Complete</span>
                 </td>
               </tr>
               <tr>
                 <td class="roadmap-phase">Month 2</td>
                 <td>
-                  Full adversarial PSF optimization loop.
-                  Add LPIPS perceptual loss; ablation over adversary strength.
+                  Integrate the differentiable PSF generator (co-worker's model).
+                  Build the adversarial optimization loop: Phase 1 trains both decoders
+                  independently; Phase 2 updates metasurface parameters \(\varphi\) by
+                  ascending the security gap gradient \(\partial\Delta\mathcal{L}/\partial\varphi\).
+                  Establish the DIV2K training pipeline. Add LPIPS perceptual loss.
                 </td>
               </tr>
               <tr>
                 <td class="roadmap-phase">Month 3</td>
                 <td>
-                  Physical fabrication-candidate PSF.
-                  Experimental validation. Paper draft.
+                  Ablation study over adversary strength and PSF parameterization.
+                  Identify a fabrication-candidate PSF with measurable security gap
+                  against SOTA blind networks. Experimental validation. Paper draft.
                 </td>
               </tr>
             </tbody>
