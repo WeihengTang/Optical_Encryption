@@ -1,4 +1,4 @@
-# MetaLens — Optical Encryption via Spatially-Varying Metasurface PSF
+# Optical Encryption via Spatially-Varying Metasurface PSF
 
 > **Can a metasurface lens encrypt a scene so that only someone with the PSF can read it?**
 
