@@ -15,15 +15,22 @@ Reference:
   Image Restoration", CVPR 2022.
 """
 import sys
+import importlib.util
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
-sys.path.insert(0, str(Path(__file__).parent / 'third_party' / 'Restormer'))
 
 import json
 import numpy as np
 import torch
 
-from basicsr.models.archs.restormer_arch import Restormer
+# Load restormer_arch directly from the cloned repo to avoid the broken
+# installed basicsr (torchvision.transforms.functional_tensor conflict).
+_arch_path = (Path(__file__).parent / 'third_party' / 'Restormer' /
+              'basicsr' / 'models' / 'archs' / 'restormer_arch.py')
+_spec = importlib.util.spec_from_file_location('restormer_arch', _arch_path)
+_mod  = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_mod)
+Restormer = _mod.Restormer
 
 from src.metrics import compute_all
 

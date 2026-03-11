@@ -15,15 +15,23 @@ Reference:
   Chen et al., "Simple Baselines for Image Restoration", ECCV 2022.
 """
 import sys
+import importlib.util
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
-sys.path.insert(0, str(Path(__file__).parent / 'third_party' / 'NAFNet'))
 
 import json
 import numpy as np
 import torch
 
-from basicsr.models.archs.NAFNet_arch import NAFNet
+# Load NAFNet_arch directly from the cloned repo to avoid the broken
+# installed basicsr (torchvision.transforms.functional_tensor was removed
+# in newer torchvision versions).
+_arch_path = (Path(__file__).parent / 'third_party' / 'NAFNet' /
+              'basicsr' / 'models' / 'archs' / 'NAFNet_arch.py')
+_spec = importlib.util.spec_from_file_location('NAFNet_arch', _arch_path)
+_mod  = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_mod)
+NAFNet = _mod.NAFNet
 
 from src.metrics import compute_all
 
