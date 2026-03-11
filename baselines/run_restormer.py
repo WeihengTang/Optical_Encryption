@@ -19,7 +19,12 @@ import types
 from pathlib import Path
 
 # ── Import isolation ──────────────────────────────────────────────────────────
-sys.path.insert(0, str(Path(__file__).parent / 'third_party' / 'Restormer'))
+_restormer_root    = Path(__file__).parent / 'third_party' / 'Restormer'
+_restormer_basicsr = _restormer_root / 'basicsr'
+
+(_restormer_basicsr / '__init__.py').touch(exist_ok=True)
+
+sys.path.insert(0, str(_restormer_root))
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 for _k in [k for k in sys.modules if k == 'basicsr' or k.startswith('basicsr.')]:

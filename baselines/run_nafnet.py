@@ -19,16 +19,23 @@ import types
 from pathlib import Path
 
 # ── Import isolation ──────────────────────────────────────────────────────────
-# Must happen before torch/numpy so no stale basicsr is cached yet.
-# 1. Put NAFNet's own basicsr first on the path.
-sys.path.insert(0, str(Path(__file__).parent / 'third_party' / 'NAFNet'))
+_nafnet_root   = Path(__file__).parent / 'third_party' / 'NAFNet'
+_nafnet_basicsr = _nafnet_root / 'basicsr'
+
+# 1. NAFNet ships without basicsr/__init__.py, so Python doesn't treat it as a
+#    package and falls back to the installed (incompatible) basicsr.
+#    Creating an empty __init__.py makes it a proper package.
+(_nafnet_basicsr / '__init__.py').touch(exist_ok=True)
+
+# 2. Put NAFNet's basicsr first so it wins over the installed version.
+sys.path.insert(0, str(_nafnet_root))
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# 2. Evict any already-cached basicsr (e.g. from a previous import attempt).
+# 3. Evict any stale cached basicsr.
 for _k in [k for k in sys.modules if k == 'basicsr' or k.startswith('basicsr.')]:
     del sys.modules[_k]
 
-# 3. Patch the torchvision sub-module removed in torchvision>=0.14.
+# 4. Patch the torchvision sub-module removed in torchvision>=0.14.
 import torchvision.transforms.functional as _F
 _fake = types.ModuleType('torchvision.transforms.functional_tensor')
 _fake.rgb_to_grayscale = _F.rgb_to_grayscale
